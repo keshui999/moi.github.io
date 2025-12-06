@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer"> <!-- 解决部分图床跨域加载问题 -->
-    <title>Q萌小豆😽</title>
+    <title>洗洁精</title>
     <style>
         * {
             margin: 0;
@@ -26,76 +25,36 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            width: 100%;
-            max-width: 600px;
-            padding-top: 70px;
-            gap: 15px;
         }
-        /* 初始隐藏小人容器，加载成功后显示（防重叠） */
         .character-container {
             perspective: 1200px;
-            z-index: 20;
-            transition: all 0.5s ease;
-            width: 100%;
-            max-width: 400px;
-            margin: 0 0 30px 0;
-            padding: 0;
-            position: relative;
-            display: none;
-        }
-        .character-container.mini {
-            position: absolute;
-            top: -25px;
-            right: 15px;
-            width: 90px;
-            height: 90px;
-            margin: 0;
-            padding: 0;
-            display: block; /* 游戏模式强制显示 */
         }
         .character-img {
             width: 100%;
+            max-width: 400px;
             height: auto;
             cursor: pointer;
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(144, 202, 249, 0.2);
-            transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
-            will-change: transform, box-shadow, filter;
+            transition: all 0.3s ease;
+            will-change: transform, box-shadow;
             filter: drop-shadow(0 0 10px rgba(66, 165, 245, 0.3));
-            /* 图片渐进加载优化 */
-            opacity: 0;
-            transition: opacity 0.5s ease;
         }
-        /* 图片加载成功后显示 */
-        .character-img.loaded {
-            opacity: 1;
-        }
-        .character-img:active {
-            animation: clickRipple 0.3s ease-out forwards;
-            box-shadow: 0 4px 8px rgba(66, 165, 245, 0.2);
-            filter: drop-shadow(0 0 6px rgba(66, 165, 245, 0.4));
-        }
-        /* 所有动画100%保留，未做任何修改 */
+        /* 旋转跳跃动画 */
         .character-img.rotate-jump {
-            animation: rotateJump 1s ease-in-out forwards;
+            animation: rotateJump 1s ease-in-out;
         }
+        /* 上下抖动动画 */
         .character-img.shake {
-            animation: shake 0.5s ease-in-out forwards;
+            animation: shake 0.5s ease-in-out;
         }
+        /* 缓慢抖动动画 */
         .character-img.slow-shake {
-            animation: slowShake 1s ease-in-out forwards;
+            animation: slowShake 1s ease-in-out;
         }
-        .character-img.thinking {
-            animation: think 2s ease-in-out infinite;
-        }
-        .character-img.win-player {
-            animation: winPlayer 1.2s ease-in-out forwards;
-        }
-        .character-img.win-ai {
-            animation: winAI 1s ease-in-out forwards;
-        }
-        .character-img.draw {
-            animation: drawAnim 1.2s ease-in-out forwards;
+        /* 点击波纹特效 */
+        .character-img:active {
+            animation: clickRipple 0.3s ease-out;
         }
         @keyframes rotateJump {
             0% { transform: rotateY(0deg) translateY(0); }
@@ -103,58 +62,26 @@
             100% { transform: rotateY(360deg) translateY(0); }
         }
         @keyframes shake {
-            0%,100% { transform: translateY(0); }
+            0% { transform: translateY(0); }
             20% { transform: translateY(-10px); }
             40% { transform: translateY(10px); }
             60% { transform: translateY(-8px); }
             80% { transform: translateY(8px); }
+            100% { transform: translateY(0); }
         }
         @keyframes slowShake {
-            0%,100% { transform: translateY(0); }
+            0% { transform: translateY(0); }
             25% { transform: translateY(-8px); }
             50% { transform: translateY(8px); }
             75% { transform: translateY(-6px); }
+            100% { transform: translateY(0); }
         }
         @keyframes clickRipple {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.96); opacity: 0.9; }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
         }
-        @keyframes think {
-            0%, 100% { 
-                transform: translateY(0) rotateZ(0); 
-                filter: drop-shadow(0 0 10px rgba(66, 165, 245, 0.3));
-            }
-            50% { 
-                transform: translateY(-5px) rotateZ(2deg); 
-                filter: drop-shadow(0 0 12px rgba(66, 165, 245, 0.4));
-            }
-        }
-        @keyframes winPlayer {
-            0% { transform: rotateY(0) translateY(0); }
-            50% { transform: rotateY(360deg) translateY(-40px); 
-                  box-shadow: 0 15px 30px rgba(66, 165, 245, 0.5);
-                  filter: drop-shadow(0 0 15px rgba(66, 165, 245, 0.6)); }
-            100% { transform: rotateY(360deg) translateY(0); }
-        }
-        @keyframes winAI {
-            0%, 100% { transform: rotateZ(0) translateY(0); }
-            20% { transform: rotateZ(5deg) translateY(-10px); }
-            40% { transform: rotateZ(-5deg) translateY(-10px); }
-            60% { transform: rotateZ(5deg) translateY(-10px); }
-            80% { transform: rotateZ(-5deg) translateY(-10px); }
-        }
-        @keyframes drawAnim {
-            0%, 100% { transform: scale(1) rotateZ(0); }
-            20% { transform: scale(1.02) rotateZ(-3deg); }
-            40% { transform: scale(0.98) rotateZ(3deg); }
-            60% { transform: scale(1.02) rotateZ(-3deg); }
-            80% { transform: scale(0.98) rotateZ(3deg); }
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        /* 顶部对话气泡（淡入淡出过渡） */
         .dialog-bubble {
             position: absolute;
             background: #e3f2fd;
@@ -164,72 +91,32 @@
             font-size: 20px;
             color: #42a5f5;
             font-weight: 500;
-            top: -35px;
+            top: -60px;
             left: 50%;
-            transform: translateX(-50%) translateY(0);
-            z-index: 30;
+            transform: translateX(-50%);
+            z-index: 10;
             display: none;
             white-space: nowrap;
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            transition: opacity 0.3s ease;
             opacity: 0;
         }
         .dialog-bubble::after {
             content: "";
             position: absolute;
-            bottom: -8px;
+            bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
-            border: 8px solid transparent;
+            border: 10px solid transparent;
             border-top-color: #e3f2fd;
         }
-        .character-img.rotate-jump ~ .dialog-bubble,
-        .character-img.win-player ~ .dialog-bubble,
-        .character-img.win-ai ~ .dialog-bubble {
-            transform: translateX(-50%) translateY(-5px);
-        }
-        .dialog-bubble.hiding {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-10px);
-        }
-        .img-placeholder {
-            width: 100%;
-            max-width: 400px;
-            height: 300px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #fff;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-            transition: opacity 0.5s ease;
-        }
-        /* 加载失败提示样式优化，提升可读性 */
-        .load-error {
-            color: #ff4444;
-            font-size: 16px;
-            text-align: center;
-            padding: 0 20px;
-            cursor: pointer;
-            line-height: 1.5;
-        }
-        .load-error:hover {
-            text-decoration: underline;
-        }
-        .loader {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e3f2fd;
-            border-top: 4px solid #42a5f5;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+        /* 底部选项气泡容器 */
         .option-container {
             display: flex;
             gap: 20px;
-            margin-top: 30px;
+            margin-top: 40px;
             display: none;
         }
+        /* 选项气泡样式（点击特效） */
         .option-bubble {
             background: #e3f2fd;
             padding: 12px 24px;
@@ -247,35 +134,7 @@
         .option-bubble:active {
             transform: scale(0.98);
         }
-        .game-select-container {
-            display: none;
-            margin-top: 30px;
-            text-align: center;
-        }
-        .game-select-text {
-            font-size: 18px;
-            color: #42a5f5;
-            margin-bottom: 15px;
-        }
-        .game-select-btn {
-            padding: 12px 32px;
-            border: 2px solid #42a5f5;
-            border-radius: 20px;
-            font-size: 18px;
-            color: #42a5f5;
-            background-color: #e3f2fd;
-            cursor: pointer;
-            outline: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: all 0.2s ease;
-        }
-        .game-select-btn:hover {
-            background: #bbdefb;
-            transform: scale(1.05);
-        }
-        .game-select-btn:active {
-            transform: scale(0.98);
-        }
+        /* 底部提示框 */
         .click-tip {
             background: rgba(227, 242, 253, 0.6);
             padding: 10px 20px;
@@ -284,493 +143,223 @@
             color: #2196f3;
             font-weight: 400;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin-top: 20px;
+            margin-top: 40px;
         }
-        .go-board-container {
-            display: none;
-            position: relative;
-            width: 100%;
-            max-width: 560px;
-            z-index: 5;
-            margin-top: 20px;
-        }
-        .go-board {
-            width: 100%;
-            padding-top: 100%;
-            background-color: #e6c885;
-            border: 2px solid #8b4513;
-            border-radius: 4px;
-            position: relative;
-            background-image: 
-                linear-gradient(#8b4513 1px, transparent 1px),
-                linear-gradient(90deg, #8b4513 1px, transparent 1px);
-            background-size: calc(100% / 14) calc(100% / 14);
-            background-position: 0 0;
-        }
-        .go-piece {
-            width: calc((100% / 14) - 2px);
-            height: calc((100% / 14) - 2px);
-            border-radius: 50%;
-            position: absolute;
-            cursor: pointer;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            z-index: 6;
-            pointer-events: none; /* 防覆盖bug */
-        }
-        .go-piece.black {
-            background-color: #000;
-        }
-        .go-piece.white {
+        /* 加载动画容器 */
+        .img-placeholder {
+            width: 400px;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             background-color: #fff;
-            border: 1px solid #ddd;
-        }
-        .game-status {
-            margin-top: 15px;
-            font-size: 18px;
-            color: #42a5f5;
-            text-align: center;
-        }
-        .restart-btn {
-            margin-top: 15px;
-            padding: 10px 24px;
-            background-color: #42a5f5;
-            color: #fff;
-            border: none;
             border-radius: 16px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            margin-left: auto;
-            margin-right: auto;
-            display: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            color: #999;
         }
-        .restart-btn:hover {
-            background-color: #2196f3;
+        /* 圆形加载动画 */
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e3f2fd;
+            border-top: 4px solid #42a5f5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-        .exit-game-btn {
-            margin-top: 10px;
-            padding: 8px 16px;
-            background-color: transparent;
-            color: #42a5f5;
-            border: 1px solid #42a5f5;
-            border-radius: 12px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-left: auto;
-            margin-right: auto;
-            display: block;
-        }
-        .exit-game-btn:hover {
-            background-color: #e3f2fd;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div class="wrap-container">
-        <div class="dialog-bubble" id="dialog">我是小豆~</div>
-        <!-- 加载容器：初始显示，加载成功后隐藏 -->
-        <div class="img-placeholder" id="placeholder">
-            <div class="loader"></div>
+        <!-- 顶部对话气泡 -->
+        <div class="dialog-bubble" id="dialog">我是洗洁精~</div>
+        <!-- 小人容器 -->
+        <div class="character-container">
+            <!-- 已替换为你提供的图床链接 -->
+            <img src="https://i.imgs.ovh/2025/10/24/7d1Zbq.png" 
+                 alt="3D Q萌恶魔小人" 
+                 class="character-img" 
+                 id="character" 
+                 loading="lazy"
+                 onload="hidePlaceholder()"
+                 onerror="showPlaceholder()">
+            <!-- 加载动画（图片加载完成前显示） -->
+            <div class="img-placeholder" id="placeholder">
+                <div class="loader"></div>
+            </div>
         </div>
-        <!-- 小人容器：保留原图床链接，未做修改 -->
-        <div class="character-container" id="characterContainer">
-            <img 
-                src="https://i.imgs.ovh/2025/10/24/7d1Zbq.png" 
-                alt="3D Q萌恶魔小人" 
-                class="character-img" 
-                id="character"
-                data-src="https://i.imgs.ovh/2025/10/24/7d1Zbq.png"> <!-- 备份src，用于重试 -->
-        </div>
+        <!-- 底部选项气泡 -->
         <div class="option-container" id="optionContainer">
             <div class="option-bubble" id="optionYes">好呀~😃</div>
             <div class="option-bubble" id="optionNo">不要~☹️</div>
         </div>
-        <div class="game-select-container" id="gameSelectContainer">
-            <div class="game-select-text" id="gameSelectText">选择你要玩的游戏😎</div>
-            <button class="game-select-btn" id="gameSelectBtn">五子棋对战</button>
-        </div>
-        <div class="go-board-container" id="goBoardContainer">
-            <div class="go-board" id="goBoard"></div>
-            <div class="game-status" id="gameStatus">你的回合（黑棋）</div>
-            <button class="restart-btn" id="restartBtn">重新开始</button>
-            <button class="exit-game-btn" id="exitGameBtn">退出游戏</button>
-        </div>
+        <!-- 初始提示框 -->
         <div class="click-tip" id="clickTip">请点击</div>
     </div>
 
     <script>
-        const placeholder = document.getElementById('placeholder');
-        const characterContainer = document.getElementById('characterContainer');
         const character = document.getElementById('character');
-        let dialog, optionContainer, optionYes, optionNo, clickTip, gameSelectContainer, gameSelectText, gameSelectBtn, goBoardContainer, goBoard, gameStatus, restartBtn, exitGameBtn;
+        const dialog = document.getElementById('dialog');
+        const placeholder = document.getElementById('placeholder');
+        const optionContainer = document.getElementById('optionContainer');
+        const optionYes = document.getElementById('optionYes');
+        const optionNo = document.getElementById('optionNo');
+        const clickTip = document.getElementById('clickTip');
+        
+        let isAnimating = false;
+        let clickCount = 0;
+        let isOptionStage = false;
+        let hasCompletedIntro = false;
+        let jokeDialogIndex = 0;
+        const jokeDialogs = ["哈哈哈哈哈😆", "逗你玩的😝", "跟本没制作游戏内容😜"];
 
-        // 加载配置：3次重试机会，每次间隔1秒（优化弱网环境）
-        const LOAD_CONFIG = {
-            maxRetry: 3,
-            retryDelay: 1000,
-            currentRetry: 0
-        };
-
-        // 初始化图片加载（带重试逻辑）
-        function initImageLoad() {
-            // 绑定加载成功事件
-            character.onload = handleImageLoadSuccess;
-            // 绑定加载失败事件（带重试）
-            character.onerror = handleImageLoadError;
-            // 主动触发加载（加时间戳破缓存）
-            character.src = character.dataset.src + '?' + new Date().getTime();
+        function hidePlaceholder() {
+            placeholder.style.display = 'none';
+            character.style.display = 'block';
         }
 
-        // 图片加载成功：隐藏加载容器，显示小人容器
-        function handleImageLoadSuccess() {
-            console.log('图片加载成功（第' + (LOAD_CONFIG.currentRetry + 1) + '次尝试）');
-            // 标记图片已加载，触发渐显动画
-            character.classList.add('loaded');
-            // 隐藏加载容器，显示小人容器
-            placeholder.style.opacity = 0;
+        function showPlaceholder() {
+            placeholder.style.display = 'flex';
+            character.style.display = 'none';
             setTimeout(() => {
-                placeholder.style.display = 'none';
-                characterContainer.style.display = 'block';
-            }, 500); // 配合CSS过渡，避免闪烁
-            // 初始化其他功能
-            initOtherFeatures();
+                character.src = character.src;
+            }, 1000);
         }
 
-        // 图片加载失败：重试逻辑
-        function handleImageLoadError() {
-            LOAD_CONFIG.currentRetry++;
-            console.log('图片加载失败，正在重试（第' + LOAD_CONFIG.currentRetry + '次）');
-            
-            // 重试次数未用完：继续重试
-            if (LOAD_CONFIG.currentRetry < LOAD_CONFIG.maxRetry) {
+        // 播放动画通用函数
+        function playAnimation(animationClass) {
+            return new Promise((resolve) => {
+                character.classList.remove('rotate-jump', 'shake', 'slow-shake');
+                character.offsetHeight;
+                character.classList.add(animationClass);
                 setTimeout(() => {
-                    character.src = character.dataset.src + '?' + new Date().getTime();
-                }, LOAD_CONFIG.retryDelay);
-            } 
-            // 重试次数用完：显示手动重试提示
-            else {
-                placeholder.innerHTML = `
-                    <div class="load-error">
-                        图片加载失败<br>
-                        点击此处手动重试
-                    </div>
-                `;
-                // 绑定手动重试事件
-                placeholder.onclick = () => {
-                    LOAD_CONFIG.currentRetry = 0;
-                    placeholder.innerHTML = '<div class="loader"></div>';
-                    character.src = character.dataset.src + '?' + new Date().getTime();
-                };
-            }
+                    character.classList.remove(animationClass);
+                    resolve();
+                }, animationClass === 'slow-shake' ? 1000 : 500);
+            });
         }
 
-        // 页面加载完成后立即启动图片加载
-        window.addEventListener('DOMContentLoaded', initImageLoad);
-
-        function initOtherFeatures() {
-            dialog = document.getElementById('dialog');
-            optionContainer = document.getElementById('optionContainer');
-            optionYes = document.getElementById('optionYes');
-            optionNo = document.getElementById('optionNo');
-            clickTip = document.getElementById('clickTip');
-            gameSelectContainer = document.getElementById('gameSelectContainer');
-            gameSelectText = document.getElementById('gameSelectText');
-            gameSelectBtn = document.getElementById('gameSelectBtn');
-            goBoardContainer = document.getElementById('goBoardContainer');
-            goBoard = document.getElementById('goBoard');
-            gameStatus = document.getElementById('gameStatus');
-            restartBtn = document.getElementById('restartBtn');
-            exitGameBtn = document.getElementById('exitGameBtn');
-
-            let isAnimating = false;
-            let clickCount = 0;
-            let isOptionStage = false;
-            let hasCompletedIntro = false;
-            let isGameStarted = false;
-            const BOARD_SIZE = 15;
-            let board = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(0)); // 0=空，1=玩家（黑），2=AI（白）
-            let currentPlayer = 1;
-            let gameOver = false;
-            let dialogTimer = null;
-            let moveCount = 0;
-
-            // -------------------------- 原有动画逻辑100%保留 --------------------------
-            function playAnimation(animationClass) {
-                return new Promise((resolve) => {
-                    character.classList.remove('rotate-jump', 'shake', 'slow-shake', 'thinking', 'win-player', 'win-ai', 'draw');
-                    character.offsetHeight; // 触发重绘
-                    character.classList.add(animationClass);
-                    const duration = animationClass === 'slow-shake' ? 1000 : (animationClass === 'win-player' ? 1200 : 500);
-                    setTimeout(() => {
-                        character.classList.remove(animationClass);
-                        resolve();
-                    }, duration);
-                });
-            }
-
-            // -------------------------- 原有对话框逻辑100%保留 --------------------------
-            function showDialog(content) {
-                return new Promise((resolve) => {
-                    if (dialogTimer) clearTimeout(dialogTimer);
-                    dialog.textContent = content;
-                    dialog.style.display = 'block';
-                    setTimeout(() => {
-                        dialog.style.opacity = 1;
-                        resolve();
-                    }, 10);
-                });
-            }
-
-            function hideDialog() {
-                return new Promise((resolve) => {
-                    dialog.classList.add('hiding');
-                    setTimeout(() => {
-                        dialog.classList.remove('hiding');
-                        dialog.style.display = 'none';
-                        resolve();
-                    }, 300);
-                });
-            }
-
-            function hideAllSelectContainers() {
-                optionContainer.style.display = 'none';
-                gameSelectContainer.style.display = 'none';
-                goBoardContainer.style.display = 'none';
-            }
-
-            // -------------------------- 原有棋盘初始化100%保留 --------------------------
-            function initBoard() {
-                return new Promise((resolve) => {
-                    goBoard.innerHTML = '';
-                    board = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(0));
-                    gameOver = false;
-                    currentPlayer = 1;
-                    moveCount = 0;
-                    gameStatus.textContent = '你的回合（黑棋）';
-                    restartBtn.style.display = 'none';
-                    goBoard.removeEventListener('click', handleBoardClick);
-                    goBoard.addEventListener('click', handleBoardClick);
+        // 显示对话（淡入效果）
+        function showDialog(content) {
+            return new Promise((resolve) => {
+                dialog.textContent = content;
+                dialog.style.display = 'block';
+                setTimeout(() => {
+                    dialog.style.opacity = 1;
                     resolve();
-                });
-            }
+                }, 10);
+            });
+        }
 
-            function enterGameMode() {
-                isGameStarted = true;
-                hideAllSelectContainers();
-                characterContainer.classList.add('mini');
-                characterContainer.style.margin = '0';
-                goBoardContainer.style.display = 'block';
+        // 隐藏对话（淡出效果）
+        function hideDialog() {
+            return new Promise((resolve) => {
+                dialog.style.opacity = 0;
+                setTimeout(() => {
+                    dialog.style.display = 'none';
+                    resolve();
+                }, 300);
+            });
+        }
+
+        // 重置笑话序列状态
+        function resetJokeState() {
+            jokeDialogIndex = 0;
+            hideDialog();
+        }
+
+        // 隐藏选项容器（点击后立即消失）
+        function hideOptionContainer() {
+            optionContainer.style.display = 'none';
+        }
+
+        // 点击小人核心逻辑
+        character.addEventListener('click', async () => {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            if (!hasCompletedIntro) {
+                clickCount++;
+                await hideDialog();
+                switch (clickCount) {
+                    case 1:
+                        await Promise.all([showDialog("我是洗洁精~"), playAnimation("rotate-jump")]);
+                        break;
+                    case 2:
+                        await Promise.all([showDialog("你好呀👋"), playAnimation("shake")]);
+                        break;
+                    case 3:
+                        await Promise.all([showDialog("很高兴认识你😊"), playAnimation("rotate-jump")]);
+                        hasCompletedIntro = true;
+                        clickCount = 0;
+                        break;
+                }
+            } else if (!isOptionStage && jokeDialogIndex === 0) {
+                await hideDialog();
                 clickTip.style.display = 'none';
-            }
-
-            function exitToOptionStage() {
-                isGameStarted = false;
-                hideAllSelectContainers();
-                characterContainer.classList.remove('mini');
-                characterContainer.style.margin = '0 0 30px 0';
+                await Promise.all([showDialog("我们来玩游戏吧~😆"), playAnimation("rotate-jump")]);
                 optionContainer.style.display = 'flex';
                 isOptionStage = true;
-                clickTip.style.display = 'none';
-                if (dialogTimer) clearTimeout(dialogTimer);
-                showDialog("我们来玩游戏吧~😆");
+            } else if (jokeDialogIndex > 0 && jokeDialogIndex < jokeDialogs.length) {
+                await hideDialog();
+                await Promise.all([
+                    showDialog(jokeDialogs[jokeDialogIndex]),
+                    playAnimation("shake")
+                ]);
+                jokeDialogIndex++;
+                if (jokeDialogIndex >= jokeDialogs.length) {
+                    setTimeout(async () => {
+                        await hideDialog();
+                        resetJokeState();
+                        optionNo.style.display = 'block'; // 恢复选项显示状态
+                        clickTip.style.display = 'block';
+                    }, 1500);
+                }
             }
 
-            // -------------------------- 玩家落子逻辑100%保留（防覆盖bug） --------------------------
-            function handleBoardClick(e) {
-                if (isAnimating || gameOver || currentPlayer !== 1) return;
+            isAnimating = false;
+        });
 
-                const rect = goBoard.getBoundingClientRect();
-                const boardWidth = rect.width;
-                const gapSize = boardWidth / (BOARD_SIZE - 1);
+        // 点击“好呀~😃”逻辑（立即隐藏选项容器）
+        optionYes.addEventListener('click', async () => {
+            if (isAnimating) return;
+            isAnimating = true;
+            isOptionStage = false;
 
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                let col = Math.round(x / gapSize);
-                let row = Math.round(y / gapSize);
+            hideOptionContainer(); // 点击后立即隐藏两个选项
+            await hideDialog();
+            await Promise.all([
+                showDialog(jokeDialogs[0]),
+                playAnimation("shake")
+            ]);
+            jokeDialogIndex = 1;
 
-                // 双重校验：范围+空位（防越界/覆盖）
-                if (col < 0 || col >= BOARD_SIZE || row < 0 || row >= BOARD_SIZE) return;
-                if (board[row][col] !== 0) return;
+            isAnimating = false;
+        });
 
-                // 正常落子
-                board[row][col] = 1;
-                placePiece(row, col, 1, gapSize);
-                moveCount++;
+        // 点击“不要~☹️”逻辑（立即隐藏选项容器）
+        optionNo.addEventListener('click', async () => {
+            if (isAnimating) return;
+            isAnimating = true;
+            isOptionStage = false;
 
-                // 玩家获胜判断
-                if (checkWin(row, col, 1)) {
-                    gameOver = true;
-                    gameStatus.textContent = '恭喜你获胜！🎉';
-                    restartBtn.style.display = 'block';
-                    showDialog('哇，你好厉害！😮').then(() => {
-                        character.classList.add('win-player');
-                        setTimeout(() => {
-                            character.classList.remove('win-player');
-                            isAnimating = false;
-                            dialogTimer = setTimeout(() => hideDialog(), 2000);
-                        }, 1200);
-                    });
-                    return;
-                }
+            hideOptionContainer(); // 点击后立即隐藏两个选项
+            await hideDialog();
+            await Promise.all([
+                showDialog("好吧...😢"),
+                playAnimation("slow-shake")
+            ]);
+            setTimeout(async () => {
+                await hideDialog();
+                optionYes.style.display = 'block'; // 恢复选项显示状态
+                clickTip.style.display = 'block';
+            }, 1500);
 
-                // 平局判断
-                if (checkDraw()) {
-                    gameOver = true;
-                    gameStatus.textContent = '平局啦~';
-                    restartBtn.style.display = 'block';
-                    showDialog('哎呀，平局了呢~').then(() => {
-                        character.classList.add('draw');
-                        setTimeout(() => {
-                            character.classList.remove('draw');
-                            isAnimating = false;
-                            dialogTimer = setTimeout(() => hideDialog(), 2000);
-                        }, 1200);
-                    });
-                    return;
-                }
-
-                // 切换AI回合
-                currentPlayer = 2;
-                gameStatus.textContent = '小豆思考中...';
-                character.classList.add('thinking');
-                setTimeout(() => {
-                    proAIMove(gapSize); // 超难AI逻辑保留
-                    character.classList.remove('thinking');
-                }, 1000);
-            }
-
-            // -------------------------- 超难AI核心逻辑100%保留（预判+必胜棋型） --------------------------
-            const AI_SCORE = {
-                AI_FOUR_FOUR: 8000000,  // 四四（必赢）
-                AI_THREE_FOUR: 7000000,  // 三四（活三+冲四，必赢）
-                AI_THREE_THREE: 6000000, // 三三（双活三，必赢）
-                AI_LIVE_FOUR: 5000000,   // 活四（必赢）
-                DEFEND_FOUR_FOUR: 5500000,// 封堵玩家四四
-                DEFEND_THREE_FOUR: 4500000,// 封堵玩家三四
-                DEFEND_THREE_THREE: 3500000,// 封堵玩家三三
-                DEFEND_LIVE_FOUR: 4000000,// 封堵玩家活四
-                AI_RUSH_FOUR: 1000000,   // AI冲四
-                AI_LIVE_THREE: 800000,   // AI活三
-                DEFEND_RUSH_FOUR: 900000, // 封堵玩家冲四
-                DEFEND_LIVE_THREE: 700000, // 封堵玩家活三
-                AI_LIVE_TWO: 500000,     // AI活二
-                DEFEND_LIVE_TWO: 400000  // 封堵玩家活二
-            };
-
-            function detectChessType(row, col, player, tempBoard = board) {
-                const directions = [[0,1],[1,0],[1,1],[1,-1]];
-                let type = {
-                    liveTwo: 0,    // 活二数量
-                    liveThree: 0,  // 活三数量（两端无挡）
-                    rushFour: 0,   // 冲四数量（一端挡）
-                    liveFour: 0,   // 活四数量（两端无挡）
-                    isThreeThree: false, // 三三（≥2个活三）
-                    isThreeFour: false,  // 三四（1活三+1冲四）
-                    isFourFour: false,   // 四四（≥2个冲四/1活四+1冲四）
-                    isWin: false         // 五连
-                };
-
-                for (const [dr, dc] of directions) {
-                    let same = 1;
-                    let leftEmpty = 0, rightEmpty = 0;
-                    let leftBlock = 0, rightBlock = 0;
-
-                    // 左/上检测
-                    for (let i=1; i<=4; i++) {
-                        const r = row - dr*i;
-                        const c = col - dc*i;
-                        if (r<0||r>=BOARD_SIZE||c<0||c>=BOARD_SIZE) { leftBlock=1; break; }
-                        if (tempBoard[r][c] === player) same++;
-                        else if (tempBoard[r][c] === 0) { leftEmpty=1; break; }
-                        else { leftBlock=1; break; }
-                    }
-
-                    // 右/下检测
-                    for (let i=1; i<=4; i++) {
-                        const r = row + dr*i;
-                        const c = col + dc*i;
-                        if (r<0||r>=BOARD_SIZE||c<0||c>=BOARD_SIZE) { rightBlock=1; break; }
-                        if (tempBoard[r][c] === player) same++;
-                        else if (tempBoard[r][c] === 0) { rightEmpty=1; break; }
-                        else { rightBlock=1; break; }
-                    }
-
-                    // 判定基础棋型
-                    if (same >=5) type.isWin = true;
-                    else if (same ===4 && leftEmpty+rightEmpty>=2 && leftBlock+rightBlock===0) type.liveFour++;
-                    else if (same ===4 && leftEmpty+rightEmpty>=1 && leftBlock+rightBlock===1) type.rushFour++;
-                    else if (same ===3 && leftEmpty+rightEmpty>=2 && leftBlock+rightBlock===0) type.liveThree++;
-                    else if (same ===2 && leftEmpty+rightEmpty>=2 && leftBlock+rightBlock===0) type.liveTwo++;
-                }
-
-                // 判定必胜复合棋型
-                type.isThreeThree = type.liveThree >= 2;
-                type.isThreeFour = (type.liveThree >=1 && type.rushFour >=1);
-                type.isFourFour = (type.rushFour >=2) || (type.liveFour >=1 && type.rushFour >=1);
-
-                return type;
-            }
-
-            // 预判玩家威胁
-            function predictPlayerThreat() {
-                let maxThreatScore = 0;
-                let playerThreatPos = null;
-
-                // 遍历所有空位，模拟玩家落子
-                for (let row=0; row<BOARD_SIZE; row++) {
-                    for (let col=0; col<BOARD_SIZE; col++) {
-                        if (board[row][col] !== 0) continue;
-
-                        // 模拟玩家落子（黑棋）
-                        board[row][col] = 1;
-                        const playerType = detectChessType(row, col, 1);
-                        // 回溯：恢复棋盘
-                        board[row][col] = 0;
-
-                        // 计算玩家威胁分数
-                        let threatScore = 0;
-                        if (playerType.isFourFour) threatScore = AI_SCORE.DEFEND_FOUR_FOUR;
-                        else if (playerType.isThreeFour) threatScore = AI_SCORE.DEFEND_THREE_FOUR;
-                        else if (playerType.isThreeThree) threatScore = AI_SCORE.DEFEND_THREE_THREE;
-                        else if (playerType.liveFour >=1) threatScore = AI_SCORE.DEFEND_LIVE_FOUR;
-                        else if (playerType.rushFour >=1) threatScore = AI_SCORE.DEFEND_RUSH_FOUR;
-                        else if (playerType.liveThree >=1) threatScore = AI_SCORE.DEFEND_LIVE_THREE;
-
-                        // 记录玩家最大威胁位置
-                        if (threatScore > maxThreatScore) {
-                            maxThreatScore = threatScore;
-                            playerThreatPos = { row, col };
-                        }
-                    }
-                }
-
-                return { playerThreatPos, maxThreatScore };
-            }
-
-            // AI落子逻辑
-            function proAIMove(gapSize) {
-                const { playerThreatPos, maxThreatScore } = predictPlayerThreat();
-                let bestScore = -Infinity;
-                let bestPos = { row:7, col:7 }; // 兜底：天元
-                const validMoves = getValidMoves(); // 有效落子（热点区域）
-
-                // 遍历所有有效落子，找最优解
-                for (const [row, col] of validMoves) {
-                    if (board[row][col] !== 0) continue;
-
-                    // 模拟AI落子（白棋）
-                    board[row][col] = 2;
-                    const aiType = detectChessType(row, col, 2);
-                    // 回溯：恢复棋盘
-                    board[row][col] = 0;
-
-                    // 计算AI落子分数（必胜棋型优先）
-                    let aiScore = 0;
-                    if (aiType.isFourFour) aiScore = AI_SCORE.AI_FOUR_FOUR;
-                    else if (aiType.isThreeFour) aiScore = AI_SCORE.AI_THREE_FOUR;
-                    else if (aiType.isThreeThree) aiScore = AI_SCORE.AI_THREE_THREE;
-                    else if (aiType.liveFour >=1) aiScore = AI_SCORE.AI_LIVE_FOUR;
-                    else if (aiType.rushFour >=1) aiScore = AI_SCORE.AI_RUSH_FOUR;
-                    else if (aiType.liveThree >=1) aiScore = AI_SCORE.AI_LIVE_THREE;
+            isAnimating = false;
+        });
+    </script>
+</body>
+</html>
