@@ -97,33 +97,42 @@
             height: 24px; /* 固定高度，防止布局跳动 */
         }
 
-        /* 棋盘样式 */
+        /* 棋盘样式 - 交叉点版本 */
         .board {
-            display: grid;
-            grid-template-columns: repeat(15, 1fr);
-            gap: 2px;
+            position: relative;
             background-color: #e9d8a6;
-            padding: 8px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 25px;
-        }
-
-        .cell {
             aspect-ratio: 1/1;
-            background-color: #f9f5f0;
-            border-radius: 3px;
-            cursor: pointer;
-            position: relative;
-            transition: background-color 0.2s ease;
+            width: 100%;
         }
 
-        .cell:hover:not(.black):not(.white):not(.preview) {
-            background-color: #ede9e0;
+        /* 棋子的父容器，用于定位 */
+        .cell {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        /* 为每个交叉点创建一个点击区域 */
+        .intersection {
+            position: absolute;
+            width: 20px; /* 点击区域大小 */
+            height: 20px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10; /* 确保点击区域在最上层 */
+        }
+
+        /* 高亮鼠标悬停的交叉点 */
+        .intersection:hover {
+            background-color: rgba(92, 64, 51, 0.1);
         }
 
         /* 落子预览 */
-        .cell.preview::after {
+        .intersection.preview::after {
             content: "";
             position: absolute;
             top: 50%;
@@ -136,16 +145,16 @@
             transition: transform 0.2s ease;
         }
 
-        .cell.preview.black::after {
+        .intersection.preview.black::after {
             background: radial-gradient(circle at 30% 30%, #666, #000);
         }
 
-        .cell.preview.white::after {
+        .intersection.preview.white::after {
             background: radial-gradient(circle at 30% 30%, #ffffff, #d0d0d0);
         }
 
         /* 棋子样式 */
-        .cell.black::after {
+        .intersection.black::after {
             content: "";
             position: absolute;
             top: 50%;
@@ -160,7 +169,7 @@
             animation: placeStone 0.3s ease-out;
         }
 
-        .cell.white::after {
+        .intersection.white::after {
             content: "";
             position: absolute;
             top: 50%;
@@ -197,6 +206,79 @@
             color: #718096;
             margin-top: 15px;
         }
+
+        /* 调试弹窗样式 */
+        .debug-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .debug-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .debug-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 80%;
+            max-height: 70%;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+
+        .debug-content h3 {
+            margin-top: 0;
+            color: #2d3748;
+            font-size: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .debug-content p {
+            margin: 8px 0;
+            font-size: 16px;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .debug-content .label {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .debug-content .value {
+            color: #718096;
+        }
+
+        .debug-content .success {
+            color: #48bb78;
+        }
+
+        .debug-content .error {
+            color: #e53e3e;
+        }
+
+        .debug-content .btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background-color: #4299e1;
+        }
     </style>
 </head>
 <body>
@@ -216,6 +298,21 @@
         <button class="btn" id="playAgainBtn">再来一局</button>
         
         <div class="footer">sleepy出品，快乐加倍</div>
+    </div>
+
+    <!-- 调试弹窗 -->
+    <div class="debug-modal" id="debugModal">
+        <div class="debug-content">
+            <h3>房间状态详情</h3>
+            <p><span class="label">操作结果:</span> <span id="debug-result" class="value">未知</span></p>
+            <p><span class="label">房间ID:</span> <span id="debug-roomId" class="value">-</span></p>
+            <p><span class="label">黑方已加入:</span> <span id="debug-blackPlayer" class="value">-</span></p>
+            <p><span class="label">白方已加入:</span> <span id="debug-whitePlayer" class="value">-</span></p>
+            <p><span class="label">当前回合:</span> <span id="debug-currentTurn" class="value">-</span></p>
+            <p><span class="label">游戏是否结束:</span> <span id="debug-gameOver" class="value">-</span></p>
+            <p><span class="label">获胜者:</span> <span id="debug-winner" class="value">-</span></p>
+            <button class="btn" onclick="document.getElementById('debugModal').classList.remove('active')">关闭</button>
+        </div>
     </div>
 
     <!-- 引入Supabase SDK -->
@@ -240,6 +337,7 @@
         const createRoomBtn = document.getElementById("createRoom");
         const joinRoomBtn = document.getElementById("joinRoom");
         const playAgainBtn = document.getElementById("playAgainBtn");
+        const debugModal = document.getElementById("debugModal");
 
         // 全局变量
         let roomId = "";
@@ -250,17 +348,51 @@
         let gameOver = false;
         let subscription = null;
 
-        // 初始化棋盘
+        // 初始化棋盘（交叉点版本）
         function initBoard() {
             boardEl.innerHTML = "";
+            
+            // 计算每个格子的大小
+            const gridSize = 14; // 15个点有14个间隔
+            const cellSizePercent = 100 / gridSize;
+
+            // 创建棋盘线
+            for (let i = 0; i < 15; i++) {
+                // 创建垂直线
+                const vLine = document.createElement("div");
+                vLine.style.position = "absolute";
+                vLine.style.width = "1px";
+                vLine.style.height = "100%";
+                vLine.style.backgroundColor = "#5c4033";
+                vLine.style.left = `${(i * cellSizePercent)}%`;
+                boardEl.appendChild(vLine);
+
+                // 创建水平线
+                const hLine = document.createElement("div");
+                hLine.style.position = "absolute";
+                hLine.style.height = "1px";
+                hLine.style.width = "100%";
+                hLine.style.backgroundColor = "#5c4033";
+                hLine.style.top = `${(i * cellSizePercent)}%`;
+                boardEl.appendChild(hLine);
+            }
+
+            // 创建一个父容器来放置所有交叉点
+            const intersectionsContainer = document.createElement("div");
+            intersectionsContainer.className = "cell";
+            boardEl.appendChild(intersectionsContainer);
+
+            // 创建交叉点的点击区域
             for (let i = 0; i < 15; i++) {
                 for (let j = 0; j < 15; j++) {
-                    const cell = document.createElement("div");
-                    cell.className = "cell";
-                    cell.dataset.i = i;
-                    cell.dataset.j = j;
-                    cell.addEventListener("click", handleCellClick);
-                    boardEl.appendChild(cell);
+                    const intersection = document.createElement("div");
+                    intersection.className = "intersection";
+                    intersection.dataset.i = i;
+                    intersection.dataset.j = j;
+                    intersection.style.left = `${(i * cellSizePercent)}%`;
+                    intersection.style.top = `${(j * cellSizePercent)}%`;
+                    intersection.addEventListener("click", handleCellClick);
+                    intersectionsContainer.appendChild(intersection);
                 }
             }
         }
@@ -299,7 +431,7 @@
             }
         }
 
-        // 加入房间
+        // 加入房间（带状态弹窗版）
         async function joinRoom() {
             if (gameOver) return;
             roomId = roomIdInput.value.trim();
@@ -310,11 +442,17 @@
             }
 
             try {
+                // 先等待500ms，确保数据库状态同步
+                await new Promise(resolve => setTimeout(resolve, 500));
+
                 const { data: roomData, error } = await supabase
                     .from('rooms')
                     .select('*')
                     .eq('id', roomId)
                     .single();
+
+                // 无论成功失败，都显示调试弹窗
+                showDebugModal(roomData, error);
 
                 if (error) {
                     if (error.code === 'PGRST116') {
@@ -326,33 +464,82 @@
                     return;
                 }
 
+                // 严格判断房间是否已满（包括游戏中/游戏结束状态）
                 if (roomData.whitePlayer && !roomData.gameOver) {
                     statusEl.textContent = "房间已满！";
                     statusEl.style.color = "#e53e3e";
                     return;
                 }
 
-                if (roomData.gameOver) {
-                    await resetRoom();
-                } else {
-                    await supabase
-                        .from('rooms')
-                        .update({ whitePlayer: true })
-                        .eq('id', roomId);
-                }
+                // 更新whitePlayer状态后，再次获取最新房间数据
+                const updateRes = await supabase
+                    .from('rooms')
+                    .update({ whitePlayer: true })
+                    .eq('id', roomId);
+                
+                if (updateRes.error) throw updateRes.error;
+
+                // 重新获取更新后的房间数据
+                const { data: newRoomData } = await supabase
+                    .from('rooms')
+                    .select('*')
+                    .eq('id', roomId)
+                    .single();
 
                 isBlack = false;
                 isMyTurn = false;
-                board = roomData.board || Array(15).fill().map(() => Array(15).fill(null));
+                board = newRoomData.board || Array(15).fill().map(() => Array(15).fill(null));
                 renderBoard();
+                
+                // 启动订阅前，强制更新状态提示
                 statusEl.textContent = `加入房间成功！（你是白方，等待黑方落子）`;
                 statusEl.style.color = "#4a5568";
-                listenToRoomChanges();
+                
+                // 延迟启动订阅，确保状态同步
+                setTimeout(() => {
+                    listenToRoomChanges();
+                }, 300);
+
             } catch (err) {
                 statusEl.textContent = `加入失败：${err.message}`;
                 statusEl.style.color = "#e53e3e";
                 console.error("加入房间错误：", err);
             }
+        }
+
+        // 显示调试弹窗
+        function showDebugModal(roomData, error) {
+            const debugResult = document.getElementById('debug-result');
+            const debugRoomId = document.getElementById('debug-roomId');
+            const debugBlackPlayer = document.getElementById('debug-blackPlayer');
+            const debugWhitePlayer = document.getElementById('debug-whitePlayer');
+            const debugCurrentTurn = document.getElementById('debug-currentTurn');
+            const debugGameOver = document.getElementById('debug-gameOver');
+            const debugWinner = document.getElementById('debug-winner');
+
+            // 重置所有值
+            debugRoomId.textContent = "-";
+            debugBlackPlayer.textContent = "-";
+            debugWhitePlayer.textContent = "-";
+            debugCurrentTurn.textContent = "-";
+            debugGameOver.textContent = "-";
+            debugWinner.textContent = "-";
+
+            if (error) {
+                debugResult.textContent = `❌ 失败: ${error.message}`;
+                debugResult.className = 'error';
+            } else {
+                debugResult.textContent = "✅ 成功";
+                debugResult.className = 'success';
+                debugRoomId.textContent = roomData.id;
+                debugBlackPlayer.textContent = roomData.blackPlayer ? "是" : "否";
+                debugWhitePlayer.textContent = roomData.whitePlayer ? "是" : "否";
+                debugCurrentTurn.textContent = roomData.currentTurn === 'black' ? "黑方" : "白方";
+                debugGameOver.textContent = roomData.gameOver ? "是" : "否";
+                debugWinner.textContent = roomData.winner || "无";
+            }
+
+            debugModal.classList.add('active');
         }
 
         // 处理落子点击
@@ -402,7 +589,7 @@
             } else {
                 clearPreview();
                 previewPosition = { i, j };
-                const cell = document.querySelector(`.cell[data-i="${i}"][data-j="${j}"]`);
+                const cell = document.querySelector(`.intersection[data-i="${i}"][data-j="${j}"]`);
                 cell.classList.add("preview", isBlack ? "black" : "white");
             }
         }
@@ -411,7 +598,7 @@
         function clearPreview() {
             if (previewPosition) {
                 const { i, j } = previewPosition;
-                const cell = document.querySelector(`.cell[data-i="${i}"][data-j="${j}"]`);
+                const cell = document.querySelector(`.intersection[data-i="${i}"][data-j="${j}"]`);
                 if (cell) cell.classList.remove("preview", "black", "white");
                 previewPosition = null;
             }
@@ -453,13 +640,21 @@
 
         // 渲染棋盘
         function renderBoard() {
-            const cells = document.querySelectorAll(".cell");
-            cells.forEach((cell, index) => {
-                const i = Math.floor(index / 15);
-                const j = index % 15;
-                cell.className = "cell";
-                if (board[i][j]) cell.classList.add(board[i][j]);
+            // 清除所有棋子状态
+            document.querySelectorAll('.intersection').forEach(cell => {
+                cell.classList.remove('black', 'white');
             });
+
+            // 根据board数据重新渲染
+            for (let i = 0; i < 15; i++) {
+                for (let j = 0; j < 15; j++) {
+                    const color = board[i][j];
+                    if (color) {
+                        const cell = document.querySelector(`.intersection[data-i="${i}"][data-j="${j}"]`);
+                        cell.classList.add(color);
+                    }
+                }
+            }
         }
 
         // 胜负判断
