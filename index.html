@@ -2,1023 +2,489 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="format-detection" content="telephone=no">
-    <title>Q萌小豆😽</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sleepy五子棋</title>
     <style>
+        /* 全局样式重置与基础设置 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* 清除微信点击高亮 */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
         body {
-            background-color: #f8f9fa;
-            display: -webkit-box; /* 兼容微信弹性盒 */
-            display: flex;
-            -webkit-box-pack: center;
-            justify-content: center;
-            -webkit-box-align: center;
-            align-items: center;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
-            font-family: "微软雅黑", sans-serif;
-            -webkit-font-smoothing: antialiased; /* 字体抗锯齿 */
+            color: #2d3748;
         }
-        .wrap-container {
-            position: relative;
-            display: -webkit-box;
-            display: flex;
-            -webkit-box-pack: center;
-            justify-content: center;
-            -webkit-box-align: center;
-            align-items: center;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            flex-direction: column;
-            width: 100%;
-            max-width: 600px;
-            padding-top: 70px;
-            gap: 15px;
-        }
-        .character-container {
-            -webkit-perspective: 1200px; /* 兼容微信3D透视 */
-            perspective: 1200px;
-            z-index: 20;
-            -webkit-transition: all 0.5s ease;
-            transition: all 0.5s ease;
-            width: 100%;
-            max-width: 400px;
-            display: none;
-            margin: 0 0 30px 0;
-            padding: 0;
-            position: relative;
-        }
-        .character-container.mini {
-            position: absolute;
-            top: -25px;
-            right: 15px;
-            width: 90px;
-            height: 90px;
-            margin: 0;
-            padding: 0;
-        }
-        .character-img {
-            width: 100%;
-            height: auto;
-            cursor: pointer;
-            border-radius: 16px;
-            -webkit-box-shadow: 0 8px 24px rgba(144, 202, 249, 0.2);
-            box-shadow: 0 8px 24px rgba(144, 202, 249, 0.2);
-            -webkit-transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
-            transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
-            -webkit-filter: drop-shadow(0 0 10px rgba(66, 165, 245, 0.3));
-            filter: drop-shadow(0 0 10px rgba(66, 165, 245, 0.3));
-        }
-        .character-img:active {
-            -webkit-animation: clickRipple 0.3s ease-out forwards;
-            animation: clickRipple 0.3s ease-out forwards;
-            -webkit-box-shadow: 0 4px 8px rgba(66, 165, 245, 0.2);
-            box-shadow: 0 4px 8px rgba(66, 165, 245, 0.2);
-            -webkit-filter: drop-shadow(0 0 6px rgba(66, 165, 245, 0.4));
-            filter: drop-shadow(0 0 6px rgba(66, 165, 245, 0.4));
-        }
-        .character-img.rotate-jump {
-            -webkit-animation: rotateJump 1s ease-in-out forwards;
-            animation: rotateJump 1s ease-in-out forwards;
-        }
-        .character-img.shake {
-            -webkit-animation: shake 0.5s ease-in-out forwards;
-            animation: shake 0.5s ease-in-out forwards;
-        }
-        .character-img.slow-shake {
-            -webkit-animation: slowShake 1s ease-in-out forwards;
-            animation: slowShake 1s ease-in-out forwards;
-        }
-        .character-img.thinking {
-            -webkit-animation: think 2s ease-in-out infinite;
-            animation: think 2s ease-in-out infinite;
-        }
-        .character-img.win-player {
-            -webkit-animation: winPlayer 1.2s ease-in-out forwards;
-            animation: winPlayer 1.2s ease-in-out forwards;
-        }
-        .character-img.win-ai {
-            -webkit-animation: winAI 1s ease-in-out forwards;
-            animation: winAI 1s ease-in-out forwards;
-        }
-        .character-img.draw {
-            -webkit-animation: drawAnim 1.2s ease-in-out forwards;
-            animation: drawAnim 1.2s ease-in-out forwards;
-        }
-        @-webkit-keyframes rotateJump {
-            0% { -webkit-transform: rotateY(0deg) translateY(0); transform: rotateY(0deg) translateY(0); }
-            50% { -webkit-transform: rotateY(360deg) translateY(-35px); transform: rotateY(360deg) translateY(-35px); -webkit-box-shadow: 0 12px 30px rgba(144, 202, 249, 0.4); box-shadow: 0 12px 30px rgba(144, 202, 249, 0.4); }
-            100% { -webkit-transform: rotateY(360deg) translateY(0); transform: rotateY(360deg) translateY(0); }
-        }
-        @keyframes rotateJump {
-            0% { -webkit-transform: rotateY(0deg) translateY(0); transform: rotateY(0deg) translateY(0); }
-            50% { -webkit-transform: rotateY(360deg) translateY(-35px); transform: rotateY(360deg) translateY(-35px); -webkit-box-shadow: 0 12px 30px rgba(144, 202, 249, 0.4); box-shadow: 0 12px 30px rgba(144, 202, 249, 0.4); }
-            100% { -webkit-transform: rotateY(360deg) translateY(0); transform: rotateY(360deg) translateY(0); }
-        }
-        @-webkit-keyframes shake {
-            0%,100% { -webkit-transform: translateY(0); transform: translateY(0); }
-            20% { -webkit-transform: translateY(-10px); transform: translateY(-10px); }
-            40% { -webkit-transform: translateY(10px); transform: translateY(10px); }
-            60% { -webkit-transform: translateY(-8px); transform: translateY(-8px); }
-            80% { -webkit-transform: translateY(8px); transform: translateY(8px); }
-        }
-        @keyframes shake {
-            0%,100% { -webkit-transform: translateY(0); transform: translateY(0); }
-            20% { -webkit-transform: translateY(-10px); transform: translateY(-10px); }
-            40% { -webkit-transform: translateY(10px); transform: translateY(10px); }
-            60% { -webkit-transform: translateY(-8px); transform: translateY(-8px); }
-            80% { -webkit-transform: translateY(8px); transform: translateY(8px); }
-        }
-        @-webkit-keyframes slowShake {
-            0%,100% { -webkit-transform: translateY(0); transform: translateY(0); }
-            25% { -webkit-transform: translateY(-8px); transform: translateY(-8px); }
-            50% { -webkit-transform: translateY(8px); transform: translateY(8px); }
-            75% { -webkit-transform: translateY(-6px); transform: translateY(-6px); }
-        }
-        @keyframes slowShake {
-            0%,100% { -webkit-transform: translateY(0); transform: translateY(0); }
-            25% { -webkit-transform: translateY(-8px); transform: translateY(-8px); }
-            50% { -webkit-transform: translateY(8px); transform: translateY(8px); }
-            75% { -webkit-transform: translateY(-6px); transform: translateY(-6px); }
-        }
-        @-webkit-keyframes clickRipple {
-            0% { -webkit-transform: scale(1); transform: scale(1); }
-            50% { -webkit-transform: scale(0.96); transform: scale(0.96); opacity: 0.9; }
-            100% { -webkit-transform: scale(1); transform: scale(1); }
-        }
-        @keyframes clickRipple {
-            0% { -webkit-transform: scale(1); transform: scale(1); }
-            50% { -webkit-transform: scale(0.96); transform: scale(0.96); opacity: 0.9; }
-            100% { -webkit-transform: scale(1); transform: scale(1); }
-        }
-        @-webkit-keyframes think {
-            0%, 100% { 
-                -webkit-transform: translateY(0) rotateZ(0); transform: translateY(0) rotateZ(0); 
-                -webkit-filter: drop-shadow(0 0 10px rgba(66, 165, 245, 0.3));
-                filter: drop-shadow(0 0 10px rgba(66, 165, 245, 0.3));
-            }
-            50% { 
-                -webkit-transform: translateY(-5px) rotateZ(2deg); transform: translateY(-5px) rotateZ(2deg);
-                -webkit-filter: drop-shadow(0 0 12px rgba(66, 165, 245, 0.4));
-                filter: drop-shadow(0 0 12px rgba(66, 165, 245, 0.4));
-            }
-        }
-        @keyframes think {
-            0%, 100% { 
-                -webkit-transform: translateY(0) rotateZ(0); transform: translateY(0) rotateZ(0); 
-                -webkit-filter: drop-shadow(0 0 10px rgba(66, 165, 245, 0.3));
-                filter: drop-shadow(0 0 10px rgba(66, 165, 245, 0.3));
-            }
-            50% { 
-                -webkit-transform: translateY(-5px) rotateZ(2deg); transform: translateY(-5px) rotateZ(2deg);
-                -webkit-filter: drop-shadow(0 0 12px rgba(66, 165, 245, 0.4));
-                filter: drop-shadow(0 0 12px rgba(66, 165, 245, 0.4));
-            }
-        }
-        @-webkit-keyframes winPlayer {
-            0% { -webkit-transform: rotateY(0) translateY(0); transform: rotateY(0) translateY(0); }
-            50% { -webkit-transform: rotateY(360deg) translateY(-40px); transform: rotateY(360deg) translateY(-40px);
-                  -webkit-box-shadow: 0 15px 30px rgba(66, 165, 245, 0.5); box-shadow: 0 15px 30px rgba(66, 165, 245, 0.5);
-                  -webkit-filter: drop-shadow(0 0 15px rgba(66, 165, 245, 0.6)); filter: drop-shadow(0 0 15px rgba(66, 165, 245, 0.6)); }
-            100% { -webkit-transform: rotateY(360deg) translateY(0); transform: rotateY(360deg) translateY(0); }
-        }
-        @keyframes winPlayer {
-            0% { -webkit-transform: rotateY(0) translateY(0); transform: rotateY(0) translateY(0); }
-            50% { -webkit-transform: rotateY(360deg) translateY(-40px); transform: rotateY(360deg) translateY(-40px);
-                  -webkit-box-shadow: 0 15px 30px rgba(66, 165, 245, 0.5); box-shadow: 0 15px 30px rgba(66, 165, 245, 0.5);
-                  -webkit-filter: drop-shadow(0 0 15px rgba(66, 165, 245, 0.6)); filter: drop-shadow(0 0 15px rgba(66, 165, 245, 0.6)); }
-            100% { -webkit-transform: rotateY(360deg) translateY(0); transform: rotateY(360deg) translateY(0); }
-        }
-        @-webkit-keyframes winAI {
-            0%, 100% { -webkit-transform: rotateZ(0) translateY(0); transform: rotateZ(0) translateY(0); }
-            20% { -webkit-transform: rotateZ(5deg) translateY(-10px); transform: rotateZ(5deg) translateY(-10px); }
-            40% { -webkit-transform: rotateZ(-5deg) translateY(-10px); transform: rotateZ(-5deg) translateY(-10px); }
-            60% { -webkit-transform: rotateZ(5deg) translateY(-10px); transform: rotateZ(5deg) translateY(-10px); }
-            80% { -webkit-transform: rotateZ(-5deg) translateY(-10px); transform: rotateZ(-5deg) translateY(-10px); }
-        }
-        @keyframes winAI {
-            0%, 100% { -webkit-transform: rotateZ(0) translateY(0); transform: rotateZ(0) translateY(0); }
-            20% { -webkit-transform: rotateZ(5deg) translateY(-10px); transform: rotateZ(5deg) translateY(-10px); }
-            40% { -webkit-transform: rotateZ(-5deg) translateY(-10px); transform: rotateZ(-5deg) translateY(-10px); }
-            60% { -webkit-transform: rotateZ(5deg) translateY(-10px); transform: rotateZ(5deg) translateY(-10px); }
-            80% { -webkit-transform: rotateZ(-5deg) translateY(-10px); transform: rotateZ(-5deg) translateY(-10px); }
-        }
-        @-webkit-keyframes drawAnim {
-            0%, 100% { -webkit-transform: scale(1) rotateZ(0); transform: scale(1) rotateZ(0); }
-            20% { -webkit-transform: scale(1.02) rotateZ(-3deg); transform: scale(1.02) rotateZ(-3deg); }
-            40% { -webkit-transform: scale(0.98) rotateZ(3deg); transform: scale(0.98) rotateZ(3deg); }
-            60% { -webkit-transform: scale(1.02) rotateZ(-3deg); transform: scale(1.02) rotateZ(-3deg); }
-            80% { -webkit-transform: scale(0.98) rotateZ(3deg); transform: scale(0.98) rotateZ(3deg); }
-        }
-        @keyframes drawAnim {
-            0%, 100% { -webkit-transform: scale(1) rotateZ(0); transform: scale(1) rotateZ(0); }
-            20% { -webkit-transform: scale(1.02) rotateZ(-3deg); transform: scale(1.02) rotateZ(-3deg); }
-            40% { -webkit-transform: scale(0.98) rotateZ(3deg); transform: scale(0.98) rotateZ(3deg); }
-            60% { -webkit-transform: scale(1.02) rotateZ(-3deg); transform: scale(1.02) rotateZ(-3deg); }
-            80% { -webkit-transform: scale(0.98) rotateZ(3deg); transform: scale(0.98) rotateZ(3deg); }
-        }
-        @-webkit-keyframes spin {
-            0% { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
-            100% { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
-        }
-        @keyframes spin {
-            0% { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
-            100% { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
-        }
-        .dialog-bubble {
-            position: absolute;
-            background: #e3f2fd;
-            padding: 14px 20px;
-            border-radius: 24px;
-            -webkit-box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            font-size: 20px;
-            color: #42a5f5;
-            font-weight: 500;
-            top: -35px;
-            left: 50%;
-            -webkit-transform: translateX(-50%) translateY(0);
-            transform: translateX(-50%) translateY(0);
-            z-index: 30;
-            display: none;
-            white-space: nowrap;
-            -webkit-transition: opacity 0.3s ease, -webkit-transform 0.3s ease;
-            transition: opacity 0.3s ease, -webkit-transform 0.3s ease;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            transition: opacity 0.3s ease, transform 0.3s ease, -webkit-transform 0.3s ease;
-            opacity: 0;
-        }
-        .dialog-bubble::after {
-            content: "";
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            -webkit-transform: translateX(-50%);
-            transform: translateX(-50%);
-            border: 8px solid transparent;
-            border-top-color: #e3f2fd;
-        }
-        .character-img.rotate-jump ~ .dialog-bubble,
-        .character-img.win-player ~ .dialog-bubble,
-        .character-img.win-ai ~ .dialog-bubble {
-            -webkit-transform: translateX(-50%) translateY(-5px);
-            transform: translateX(-50%) translateY(-5px);
-        }
-        .dialog-bubble.hiding {
-            opacity: 0;
-            -webkit-transform: translateX(-50%) translateY(-10px);
-            transform: translateX(-50%) translateY(-10px);
-        }
-        .img-placeholder {
-            width: 100%;
-            max-width: 400px;
-            height: 300px;
-            display: -webkit-box;
-            display: flex;
-            -webkit-box-pack: center;
-            justify-content: center;
-            -webkit-box-align: center;
-            align-items: center;
-            background-color: #fff;
-            border-radius: 16px;
-            -webkit-box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-        .loader {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e3f2fd;
-            border-top: 4px solid #42a5f5;
-            border-radius: 50%;
-            -webkit-animation: spin 1s linear infinite;
-            animation: spin 1s linear infinite;
-        }
-        .option-container {
-            display: -webkit-box;
-            display: flex;
-            gap: 20px;
-            display: none;
-            margin-top: 30px;
-        }
-        .option-bubble {
-            background: #e3f2fd;
-            padding: 12px 24px;
+
+        /* 主容器 */
+        .container {
+            background-color: white;
             border-radius: 20px;
-            font-size: 18px;
-            color: #42a5f5;
-            cursor: pointer;
-            -webkit-box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            -webkit-transition: all 0.2s ease;
-            transition: all 0.2s ease;
-        }
-        .option-bubble:hover {
-            background: #bbdefb;
-            -webkit-transform: scale(1.05);
-            transform: scale(1.05);
-        }
-        .option-bubble:active {
-            -webkit-transform: scale(0.98);
-            transform: scale(0.98);
-        }
-        .game-select-container {
-            display: none;
-            margin-top: 30px;
-        }
-        .game-select-btn {
-            padding: 12px 32px;
-            border: 2px solid #42a5f5;
-            border-radius: 20px;
-            font-size: 18px;
-            color: #42a5f5;
-            background-color: #e3f2fd;
-            cursor: pointer;
-            outline: none;
-            -webkit-box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            -webkit-transition: all 0.2s ease;
-            transition: all 0.2s ease;
-        }
-        .game-select-btn:hover {
-            background: #bbdefb;
-            -webkit-transform: scale(1.05);
-            transform: scale(1.05);
-        }
-        .game-select-btn:active {
-            -webkit-transform: scale(0.98);
-            transform: scale(0.98);
-        }
-        .click-tip {
-            background: rgba(227, 242, 253, 0.6);
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 18px;
-            color: #2196f3;
-            font-weight: 400;
-            -webkit-box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin-top: 20px;
-        }
-        .go-board-container {
-            display: none;
-            position: relative;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             width: 100%;
-            max-width: 560px;
-            z-index: 5;
-            margin-top: 20px;
-        }
-        .go-board {
-            width: 100%;
-            padding-top: 100%;
-            background-color: #e6c885;
-            border: 2px solid #8b4513;
-            border-radius: 4px;
-            position: relative;
-            background-image: 
-                -webkit-linear-gradient(#8b4513 1px, transparent 1px),
-                -webkit-linear-gradient(90deg, #8b4513 1px, transparent 1px);
-            background-image: 
-                linear-gradient(#8b4513 1px, transparent 1px),
-                linear-gradient(90deg, #8b4513 1px, transparent 1px);
-            background-size: calc(100% / 14) calc(100% / 14);
-            background-position: 0 0;
-        }
-        .go-piece {
-            width: calc((100% / 14) - 2px);
-            height: calc((100% / 14) - 2px);
-            border-radius: 50%;
-            position: absolute;
-            cursor: pointer;
-            -webkit-transform: translate(-50%, -50%);
-            transform: translate(-50%, -50%);
-            -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            z-index: 6;
-        }
-        .go-piece.black {
-            background-color: #000;
-        }
-        .go-piece.white {
-            background-color: #fff;
-            border: 1px solid #ddd;
-        }
-        .game-status {
-            margin-top: 15px;
-            font-size: 18px;
-            color: #42a5f5;
+            max-width: 420px;
             text-align: center;
         }
-        .restart-btn {
-            margin-top: 15px;
-            padding: 10px 24px;
-            background-color: #42a5f5;
-            color: #fff;
-            border: none;
-            border-radius: 16px;
-            font-size: 16px;
-            cursor: pointer;
-            -webkit-transition: background-color 0.2s ease;
-            transition: background-color 0.2s ease;
-            margin-left: auto;
-            margin-right: auto;
-            display: none;
+
+        /* 标题 */
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 25px;
+            letter-spacing: -0.5px;
         }
-        .restart-btn:hover {
-            background-color: #2196f3;
+
+        /* 房间号区域 */
+        .room-area {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        #roomId {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            outline: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        #roomId:focus {
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .btn {
+            padding: 14px 22px;
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn:hover {
+            background-color: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* 状态提示 */
+        #status {
+            font-size: 18px;
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 20px;
+            height: 24px; /* 固定高度，防止布局跳动 */
+        }
+
+        /* 棋盘样式（现代感升级） */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            gap: 2px;
+            background-color: #e9d8a6; /* 更真实的棋盘木色 */
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .cell {
+            aspect-ratio: 1/1;
+            background-color: #f9f5f0; /* 更柔和的棋盘底色 */
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s ease;
+        }
+
+        .cell:hover:not(.black):not(.white):not(.preview) {
+            background-color: #ede9e0; /* 鼠标悬停效果 */
+        }
+
+        /* 落子预览（半透明） */
+        .cell.preview::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 82%;
+            height: 82%;
+            border-radius: 50%;
+            opacity: 0.4; /* 半透明效果 */
+            transition: transform 0.2s ease;
+        }
+
+        .cell.preview.black::after {
+            background: radial-gradient(circle at 30% 30%, #666, #000);
+        }
+
+        .cell.preview.white::after {
+            background: radial-gradient(circle at 30% 30%, #ffffff, #d0d0d0);
+        }
+
+        /* 棋子样式（精致3D效果） */
+        .cell.black::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 82%;
+            height: 82%;
+            background: radial-gradient(circle at 30% 30%, #666, #000); /* 3D黑色棋子 */
+            border-radius: 50%;
+            box-shadow: 
+                inset 0 -3px 5px rgba(0, 0, 0, 0.5),
+                0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .cell.white::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 82%;
+            height: 82%;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #d0d0d0); /* 3D白色棋子 */
+            border-radius: 50%;
+            box-shadow: 
+                inset 0 -3px 5px rgba(0, 0, 0, 0.1),
+                0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        /* 落子动画 */
+        .cell.black::after,
+        .cell.white::after {
+            animation: placeStone 0.3s ease-out;
+        }
+
+        @keyframes placeStone {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* 页脚 */
+        .footer {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 15px;
+        }
+
+        /* 再来一局按钮 */
+        #playAgainBtn {
+            margin-top: 15px;
+            padding: 12px 24px;
+            background-color: #48bb78; /* 绿色 */
+            display: none; /* 默认隐藏 */
         }
     </style>
-    <!-- 移除preload避免微信跨域问题 -->
 </head>
 <body>
-    <div class="wrap-container">
-        <div class="dialog-bubble" id="dialog">我是小豆~</div>
-        <div class="img-placeholder" id="placeholder">
-            <div class="loader"></div>
+    <div class="container">
+        <h1>sleepy五子棋</h1>
+        
+        <div class="room-area">
+            <input type="text" id="roomId" placeholder="输入4位房间号">
+            <button class="btn" id="createRoom">创建</button>
+            <button class="btn" id="joinRoom">加入</button>
         </div>
-        <div class="character-container" id="characterContainer">
-            <!-- 替换为本地图片，添加crossorigin属性兼容微信 -->
-            <img 
-                src="Screenshot_20250906_143254.jpg" 
-                alt="3D Q萌恶魔小人" 
-                class="character-img" 
-                id="character"
-                crossorigin="anonymous"
-                onload="onImgLoadSuccess()"
-                onerror="onImgLoadError()">
-        </div>
-        <div class="option-container" id="optionContainer">
-            <div class="option-bubble" id="optionYes">好呀~😃</div>
-            <div class="option-bubble" id="optionNo">不要~☹️</div>
-        </div>
-        <div class="game-select-container" id="gameSelectContainer">
-            <button class="game-select-btn" id="gameSelectBtn">五子棋对战</button>
-        </div>
-        <div class="go-board-container" id="goBoardContainer">
-            <div class="go-board" id="goBoard"></div>
-            <div class="game-status" id="gameStatus">你的回合（黑棋）</div>
-            <button class="restart-btn" id="restartBtn">重新开始</button>
-        </div>
-        <div class="click-tip" id="clickTip">请点击</div>
+        
+        <div id="status">请创建或加入房间</div>
+        
+        <div class="board" id="board"></div>
+        
+        <button class="btn" id="playAgainBtn">再来一局</button>
+        
+        <div class="footer">sleepy出品，快乐加倍</div>
     </div>
 
+    <!-- 引入Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-        // 微信浏览器兼容：提前获取DOM元素
-        const placeholder = document.getElementById('placeholder');
-        const characterContainer = document.getElementById('characterContainer');
-        const character = document.getElementById('character');
-        let dialog, optionContainer, optionYes, optionNo, clickTip, gameSelectContainer, gameSelectBtn, goBoardContainer, goBoard, gameStatus, restartBtn;
+        // Supabase配置（已为你填好）
+        const supabaseConfig = {
+            url: "https://ftcxvlihfzwxkwzewqph.supabase.co",
+            anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y3h2bGloZnp3eGt3emV3cXBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2MzYyNzgsImV4cCI6MjA4MTIxMjI3OH0.FZyhUAijmPtx7hF7lCopZCx95XYK3qfSWSmKUEgX_7k"
+        };
 
-        // 图片加载成功（兼容微信图片加载机制）
-        function onImgLoadSuccess() {
-            console.log('小人图片加载成功');
-            placeholder.style.display = 'none';
-            characterContainer.style.display = 'block';
-            // 延迟初始化避免微信渲染阻塞
-            setTimeout(initOtherFeatures, 300);
+        // 初始化Supabase
+        const supabase = supabase.createClient(
+            supabaseConfig.url,
+            supabaseConfig.anonKey
+        );
+
+        // 全局变量
+        let roomId = "";
+        let isBlack = true;
+        let isMyTurn = false;
+        let board = Array(15).fill().map(() => Array(15).fill(null));
+        let previewPosition = null; // 用于存储预览棋子的位置
+        let gameOver = false;
+
+        // DOM元素
+        const boardEl = document.getElementById("board");
+        const statusEl = document.getElementById("status");
+        const playAgainBtn = document.getElementById("playAgainBtn");
+
+        // 初始化棋盘
+        for (let i = 0; i < 15; i++) {
+            for (let j = 0; j < 15; j++) {
+                const cell = document.createElement("div");
+                cell.className = "cell";
+                cell.dataset.i = i;
+                cell.dataset.j = j;
+                cell.addEventListener("click", handleCellClick);
+                boardEl.appendChild(cell);
+            }
         }
 
-        // 图片加载失败（优化重试逻辑）
-        function onImgLoadError() {
-            console.log('小人图片加载失败，显示备用状态');
-            placeholder.innerHTML = '<span style="color:#ff4444;">图片加载失败，点击重试</span>';
-            placeholder.style.cursor = 'pointer';
-            placeholder.onclick = () => {
-                placeholder.innerHTML = '<div class="loader"></div>';
-                // 微信兼容：添加时间戳避免缓存
-                character.src = 'Screenshot_20250906_143254.jpg?' + new Date().getTime();
-            };
-        }
+        // 创建房间
+        document.getElementById("createRoom").addEventListener("click", async () => {
+            const input = document.getElementById("roomId");
+            roomId = input.value.trim() || Math.floor(1000 + Math.random() * 9000).toString();
+            input.value = roomId;
 
-        function initOtherFeatures() {
-            dialog = document.getElementById('dialog');
-            optionContainer = document.getElementById('optionContainer');
-            optionYes = document.getElementById('optionYes');
-            optionNo = document.getElementById('optionNo');
-            clickTip = document.getElementById('clickTip');
-            gameSelectContainer = document.getElementById('gameSelectContainer');
-            gameSelectBtn = document.getElementById('gameSelectBtn');
-            goBoardContainer = document.getElementById('goBoardContainer');
-            goBoard = document.getElementById('goBoard');
-            gameStatus = document.getElementById('gameStatus');
-            restartBtn = document.getElementById('restartBtn');
+            await resetRoom(); // 使用新的重置房间函数
 
-            let isAnimating = false;
-            let clickCount = 0;
-            let isOptionStage = false;
-            let hasCompletedIntro = false;
-            let isGameStarted = false;
-            const BOARD_SIZE = 15;
-            let board = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(0));
-            let currentPlayer = 1;
-            let gameOver = false;
-            let dialogTimer = null;
+            isBlack = true;
+            isMyTurn = true;
+            statusEl.textContent = `房间创建成功！房间号：${roomId}（你是黑方，先下）`;
+            
+            listenToRoomChanges();
+        });
 
-            // 动画播放函数（兼容微信动画触发）
-            function playAnimation(animationClass) {
-                return new Promise((resolve) => {
-                    character.classList.remove('rotate-jump', 'shake', 'slow-shake', 'thinking', 'win-player', 'win-ai', 'draw');
-                    character.offsetHeight; // 强制重绘（微信兼容）
-                    character.classList.add(animationClass);
-                    const durationMap = {
-                        'slow-shake': 1000,
-                        'win-player': 1200,
-                        'win-ai': 1000,
-                        'draw': 1200,
-                        'thinking': 2000,
-                        default: 500
-                    };
-                    const duration = durationMap[animationClass] || durationMap.default;
-                    setTimeout(() => {
-                        character.classList.remove(animationClass);
-                        resolve();
-                    }, duration);
-                });
+        // 加入房间
+        document.getElementById("joinRoom").addEventListener("click", async () => {
+            roomId = document.getElementById("roomId").value.trim();
+            if (!roomId) { alert("请输入房间号！"); return; }
+
+            const { data: roomData } = await supabase.from('rooms').select('*').eq('id', roomId).single();
+            
+            if (!roomData) {
+                alert("房间不存在！");
+                return;
+            }
+            if (roomData.whitePlayer && !roomData.gameOver) {
+                alert("房间已满！");
+                return;
             }
 
-            // 提示框显示（优化微信过渡效果）
-            function showDialog(content) {
-                return new Promise((resolve) => {
-                    if (dialogTimer) clearTimeout(dialogTimer);
-                    dialog.textContent = content;
-                    dialog.style.display = 'block';
-                    // 微信兼容：使用setTimeout触发过渡
-                    setTimeout(() => {
-                        dialog.style.opacity = 1;
-                        resolve();
-                    }, 10);
-                });
+            // 如果房间存在但游戏已结束，自动加入并准备开始新游戏
+            if (roomData.gameOver) {
+                await resetRoom();
+            } else {
+                await supabase.from('rooms').update({ whitePlayer: true }).eq('id', roomId);
             }
+            
+            isBlack = false;
+            isMyTurn = false;
+            statusEl.textContent = `加入房间成功！（你是白方，等待黑方落子）`;
+            
+            board = roomData.board || Array(15).fill().map(() => Array(15).fill(null));
+            renderBoard();
+            
+            listenToRoomChanges();
+        });
 
-            // 提示框消失
-            function hideDialog() {
-                return new Promise((resolve) => {
-                    dialog.classList.add('hiding');
-                    setTimeout(() => {
-                        dialog.classList.remove('hiding');
-                        dialog.style.display = 'none';
-                        resolve();
-                    }, 300);
-                });
-            }
+        // 处理落子（新增预览和确认逻辑）
+        async function handleCellClick(e) {
+            if (!roomId || !isMyTurn || gameOver) return;
+            const i = parseInt(e.target.dataset.i);
+            const j = parseInt(e.target.dataset.j);
+            if (board[i][j] !== null) return;
 
-            function hideOptionContainer() {
-                optionContainer.style.display = 'none';
-            }
+            // 如果点击的是预览位置，则确认落子
+            if (previewPosition && previewPosition.i === i && previewPosition.j === j) {
+                // 清除所有预览
+                clearPreview();
 
-            function hideGameSelectContainer() {
-                gameSelectContainer.style.display = 'none';
-            }
+                // 更新本地棋盘
+                board[i][j] = isBlack ? "black" : "white";
+                renderBoard();
 
-            function initBoard() {
-                goBoard.innerHTML = '';
-                board = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(0));
-                gameOver = false;
-                currentPlayer = 1;
-                gameStatus.textContent = '你的回合（黑棋）';
-                restartBtn.style.display = 'none';
-                // 微信兼容：移除旧事件再绑定
-                goBoard.removeEventListener('click', handleBoardClick);
-                goBoard.addEventListener('click', handleBoardClick);
-            }
-
-            // 棋盘点击处理（优化微信坐标计算）
-            function handleBoardClick(e) {
-                if (isAnimating || gameOver || currentPlayer !== 1) return;
-
-                const rect = goBoard.getBoundingClientRect();
-                const boardWidth = rect.width;
-                const gapSize = boardWidth / (BOARD_SIZE - 1);
-
-                // 微信兼容：使用touch事件备用逻辑
-                let x, y;
-                if (e.touches && e.touches[0]) {
-                    x = e.touches[0].clientX - rect.left;
-                    y = e.touches[0].clientY - rect.top;
-                } else {
-                    x = e.clientX - rect.left;
-                    y = e.clientY - rect.top;
-                }
-
-                let col = Math.round(x / gapSize);
-                let row = Math.round(y / gapSize);
-
-                if (col < 0 || col >= BOARD_SIZE || row < 0 || row >= BOARD_SIZE || board[row][col] !== 0) {
-                    return;
-                }
-
-                board[row][col] = 1;
-                placePiece(row, col, 1, gapSize);
-
-                if (checkWin(row, col, 1)) {
+                // 检查胜负
+                let winner = checkWin(i, j);
+                if (winner) {
                     gameOver = true;
-                    gameStatus.textContent = '恭喜你获胜！🎉';
-                    restartBtn.style.display = 'block';
-                    showDialog('哇，你好厉害！😮').then(() => {
-                        character.classList.add('win-player');
-                        setTimeout(() => {
-                            character.classList.remove('win-player');
-                            isAnimating = false;
-                            dialogTimer = setTimeout(() => hideDialog(), 2000);
-                        }, 1200);
-                    });
+                    statusEl.textContent = `🎉 游戏结束！${winner}获胜！`;
+                    await supabase.from('rooms').update({ gameOver: true, winner: winner }).eq('id', roomId);
+                    playAgainBtn.style.display = "block";
                     return;
                 }
 
+                // 检查平局
                 if (checkDraw()) {
                     gameOver = true;
-                    gameStatus.textContent = '平局啦~';
-                    restartBtn.style.display = 'block';
-                    showDialog('哎呀，平局了呢~').then(() => {
-                        character.classList.add('draw');
-                        setTimeout(() => {
-                            character.classList.remove('draw');
-                            isAnimating = false;
-                            dialogTimer = setTimeout(() => hideDialog(), 2000);
-                        }, 1200);
-                    });
+                    statusEl.textContent = `🤝 游戏结束！平局！`;
+                    await supabase.from('rooms').update({ gameOver: true, winner: "draw" }).eq('id', roomId);
+                    playAgainBtn.style.display = "block";
                     return;
                 }
 
-                currentPlayer = 2;
-                gameStatus.textContent = '小豆思考中...';
-                character.classList.add('thinking');
-                setTimeout(() => {
-                    proAIMove(gapSize);
-                    character.classList.remove('thinking');
-                }, 1000);
+                // 同步到数据库（切换回合）
+                const nextTurn = isBlack ? "white" : "black";
+                await supabase.from('rooms').update({ 
+                    board: board,
+                    currentTurn: nextTurn
+                }).eq('id', roomId);
+
+                isMyTurn = false;
+                statusEl.textContent = `⌛ 等待对手落子...`;
+            } else {
+                // 否则，显示预览
+                clearPreview();
+                previewPosition = { i, j };
+                const cell = document.querySelector(`.cell[data-i="${i}"][data-j="${j}"]`);
+                cell.classList.add("preview", isBlack ? "black" : "white");
             }
-
-            // AI落子逻辑（保持原功能）
-            function proAIMove(gapSize) {
-                const SCORE = {
-                    WIN: 1000000,    
-                    LIVE_FOUR: 200000, 
-                    RUSH_FOUR: 100000,  
-                    LIVE_THREE: 50000,  
-                    RUSH_THREE: 20000,   
-                    DEFEND_LIVE_FOUR: 150000, 
-                    DEFEND_RUSH_FOUR: 80000,  
-                    DEFEND_LIVE_THREE: 15000,  
-                    LIVE_TWO: 5000,     
-                    RUSH_TWO: 2000,     
-                    EMPTY: 0
-                };
-
-                const POSITION_SCORE = [
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 0],
-                    [0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 2, 2, 1, 1, 0],
-                    [0, 2, 3, 4, 4, 4, 4, 4, 4, 3, 3, 2, 1, 2, 0],
-                    [0, 2, 3, 4, 5, 5, 5, 5, 4, 4, 3, 2, 2, 2, 0],
-                    [0, 2, 3, 4, 5, 6, 6, 5, 5, 4, 3, 2, 2, 2, 0],
-                    [0, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 2, 2, 0],
-                    [0, 2, 3, 4, 5, 6, 6, 6, 5, 4, 3, 2, 2, 2, 0],
-                    [0, 2, 3, 4, 5, 5, 5, 5, 5, 4, 3, 2, 2, 2, 0],
-                    [0, 2, 3, 4, 4, 4, 4, 4, 4, 4, 3, 2, 2, 2, 0],
-                    [0, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 0],
-                    [0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 0],
-                    [0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 0],
-                    [0, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 0],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                ];
-
-                function checkChessType(row, col, player, isDefend = false) {
-                    const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
-                    let maxScore = 0;
-
-                    for (const [dr, dc] of directions) {
-                        let same = 1, leftEmpty = 0, rightEmpty = 0, leftBlock = 0, rightBlock = 0;
-                        let r, c;
-
-                        for (let i = 1; i <= 4; i++) {
-                            r = row - dr * i;
-                            c = col - dc * i;
-                            if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) {
-                                leftBlock = 1;
-                                break;
-                            }
-                            if (board[r][c] === player) same++;
-                            else if (board[r][c] === 0) {
-                                leftEmpty++;
-                                break;
-                            } else {
-                                leftBlock = 1;
-                                break;
-                            }
-                        }
-
-                        for (let i = 1; i <= 4; i++) {
-                            r = row + dr * i;
-                            c = col + dc * i;
-                            if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) {
-                                rightBlock = 1;
-                                break;
-                            }
-                            if (board[r][c] === player) same++;
-                            else if (board[r][c] === 0) {
-                                rightEmpty++;
-                                break;
-                            } else {
-                                rightBlock = 1;
-                                break;
-                            }
-                        }
-
-                        const totalEmpty = leftEmpty + rightEmpty;
-                        const totalBlock = leftBlock + rightBlock;
-                        let score = SCORE.EMPTY;
-
-                        if (!isDefend) {
-                            if (same >= 5) score = SCORE.WIN;
-                            else if (same === 4 && totalEmpty >= 1 && totalBlock === 0) score = SCORE.LIVE_FOUR;
-                            else if ((same === 4 && totalEmpty >= 1 && totalBlock === 1) || (same === 3 && totalEmpty >= 2 && totalBlock === 0)) score = SCORE.RUSH_FOUR;
-                            else if ((same === 3 && totalEmpty >= 1 && totalBlock === 1) || (same === 2 && totalEmpty >= 2 && totalBlock === 0)) score = SCORE.LIVE_THREE;
-                            else if ((same === 3 && totalEmpty === 0 && totalBlock === 2) || (same === 2 && totalEmpty >= 1 && totalBlock === 1)) score = SCORE.RUSH_THREE;
-                            else if (same === 2 && totalEmpty >= 2 && totalBlock === 1) score = SCORE.LIVE_TWO;
-                            else if (same === 1 && totalEmpty >= 2 && totalBlock === 0) score = SCORE.RUSH_TWO;
-                        } else {
-                            if (same >= 4 && totalEmpty >= 1 && totalBlock === 0) score = SCORE.DEFEND_LIVE_FOUR;
-                            else if ((same === 4 && totalEmpty >= 1 && totalBlock === 1) || (same === 3 && totalEmpty >= 2 && totalBlock === 0)) score = SCORE.DEFEND_RUSH_FOUR;
-                            else if ((same === 3 && totalEmpty >= 1 && totalBlock === 1) || (same === 2 && totalEmpty >= 2 && totalBlock === 0)) score = SCORE.DEFEND_LIVE_THREE;
-                        }
-
-                        maxScore = Math.max(maxScore, score);
-                    }
-
-                    return maxScore;
-                }
-
-                let bestScore = -Infinity;
-                let bestPos = { row: 7, col: 7 };
-                const opponent = 1;
-
-                for (let row = 0; row < BOARD_SIZE; row++) {
-                    for (let col = 0; col < BOARD_SIZE; col++) {
-                        if (board[row][col] !== 0) continue;
-
-                        board[row][col] = 2;
-                        const attackScore = checkChessType(row, col, 2, false);
-                        board[row][col] = 0;
-
-                        board[row][col] = opponent;
-                        const defendScore = checkChessType(row, col, opponent, true);
-                        board[row][col] = 0;
-
-                        const totalScore = attackScore * 1.2 + defendScore + POSITION_SCORE[row][col] * 100;
-
-                        if (totalScore > bestScore) {
-                            bestScore = totalScore;
-                            bestPos = { row, col };
-                        }
-                    }
-                }
-
-                if (board[bestPos.row][bestPos.col] === 0) {
-                    board[bestPos.row][bestPos.col] = 2;
-                    placePiece(bestPos.row, bestPos.col, 2, gapSize);
-                    const aiType = checkChessType(bestPos.row, bestPos.col, 2);
-                    if (aiType >= SCORE.LIVE_THREE) {
-                        console.log('小豆主动形成活三/活四，以攻为守');
-                    }
-                }
-
-                checkAIFinish(bestPos.row, bestPos.col);
-            }
-
-            function checkAIFinish(row, col) {
-                if (checkWin(row, col, 2)) {
-                    gameOver = true;
-                    gameStatus.textContent = '小豆赢啦😆，再试试吧！';
-                    restartBtn.style.display = 'block';
-                    showDialog('小豆赢啦~ 下次加油喔😜').then(() => {
-                        character.classList.add('win-ai');
-                        setTimeout(() => {
-                            character.classList.remove('win-ai');
-                            isAnimating = false;
-                            dialogTimer = setTimeout(() => hideDialog(), 2000);
-                        }, 1000);
-                    });
-                    return;
-                }
-
-                if (checkDraw()) {
-                    gameOver = true;
-                    gameStatus.textContent = '平局啦~';
-                    restartBtn.style.display = 'block';
-                    showDialog('哎呀，平局了呢~').then(() => {
-                        character.classList.add('draw');
-                        setTimeout(() => {
-                            character.classList.remove('draw');
-                            isAnimating = false;
-                            dialogTimer = setTimeout(() => hideDialog(), 2000);
-                        }, 1200);
-                    });
-                    return;
-                }
-
-                currentPlayer = 1;
-                gameStatus.textContent = '你的回合（黑棋）';
-                isAnimating = false;
-            }
-
-            function placePiece(row, col, player, gapSize) {
-                const piece = document.createElement('div');
-                piece.className = `go-piece ${player === 1 ? 'black' : 'white'}`;
-                piece.style.left = `${col * gapSize}px`;
-                piece.style.top = `${row * gapSize}px`;
-                goBoard.appendChild(piece);
-            }
-
-            function checkWin(row, col, player) {
-                const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
-                for (const [dr, dc] of directions) {
-                    let count = 1;
-                    for (let i = 1; i < 5; i++) {
-                        const r = row + dr * i;
-                        const c = col + dc * i;
-                        if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE || board[r][c] !== player) break;
-                        count++;
-                    }
-                    for (let i = 1; i < 5; i++) {
-                        const r = row - dr * i;
-                        const c = col - dc * i;
-                        if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE || board[r][c] !== player) break;
-                        count++;
-                    }
-                    if (count >= 5) return true;
-                }
-                return false;
-            }
-
-            function checkDraw() {
-                for (let row = 0; row < BOARD_SIZE; row++) {
-                    for (let col = 0; col < BOARD_SIZE; col++) {
-                        if (board[row][col] === 0) return false;
-                    }
-                }
-                return true;
-            }
-
-            // 重启按钮事件
-            restartBtn.addEventListener('click', () => {
-                if (isAnimating) return;
-                isAnimating = true;
-                if (dialogTimer) clearTimeout(dialogTimer);
-                hideDialog().then(() => {
-                    initBoard();
-                    isAnimating = false;
-                });
-            });
-
-            // 游戏选择按钮事件
-            gameSelectBtn.addEventListener('click', () => {
-                if (isAnimating) return;
-                isAnimating = true;
-                hideGameSelectContainer();
-                showDialog('准备开始五子棋！').then(() => {
-                    setTimeout(() => {
-                        hideDialog().then(() => {
-                            goBoardContainer.style.display = 'block';
-                            initBoard();
-                            isGameStarted = true;
-                            isAnimating = false;
-                        });
-                    }, 1000);
-                });
-            });
-
-            // 选项按钮事件
-            optionYes.addEventListener('click', () => {
-                if (isAnimating) return;
-                isAnimating = true;
-                hideOptionContainer();
-                showDialog('太棒啦！').then(() => {
-                    playAnimation('rotate-jump').then(() => {
-                        hideDialog().then(() => {
-                            setTimeout(() => {
-                                showDialog('我们来玩五子棋吧~').then(() => {
-                                    setTimeout(() => {
-                                        hideDialog().then(() => {
-                                            gameSelectContainer.style.display = 'block';
-                                            hasCompletedIntro = true;
-                                            isAnimating = false;
-                                        });
-                                    }, 1500);
-                                });
-                            }, 500);
-                        });
-                    });
-                });
-            });
-
-            optionNo.addEventListener('click', () => {
-                if (isAnimating) return;
-                isAnimating = true;
-                hideOptionContainer();
-                showDialog('好吧~😢').then(() => {
-                    playAnimation('slow-shake').then(() => {
-                        hideDialog().then(() => {
-                            setTimeout(() => {
-                                showDialog('那再点点我呀~').then(() => {
-                                    isOptionStage = false;
-                                    isAnimating = false;
-                                });
-                            }, 500);
-                        });
-                    });
-                });
-            });
-
-            // 小人点击事件（兼容微信touch事件）
-            function handleCharacterClick() {
-                if (isAnimating || isGameStarted) return;
-                isAnimating = true;
-
-                if (hasCompletedIntro) {
-                    showDialog('还要再玩一次吗？').then(() => {
-                        gameSelectContainer.style.display = 'block';
-                        isAnimating = false;
-                    });
-                    return;
-                }
-
-                clickCount++;
-                switch (clickCount) {
-                    case 1:
-                        showDialog('你好呀！').then(() => {
-                            setTimeout(() => {
-                                hideDialog().then(() => {
-                                    isAnimating = false;
-                                });
-                            }, 1500);
-                        });
-                        break;
-                    case 2:
-                        showDialog('很高兴认识你~').then(() => {
-                            setTimeout(() => {
-                                hideDialog().then(() => {
-                                    isAnimating = false;
-                                });
-                            }, 1500);
-                        });
-                        break;
-                    case 3:
-                        showDialog('要和我一起玩吗？').then(() => {
-                            setTimeout(() => {
-                                hideDialog().then(() => {
-                                    optionContainer.style.display = 'flex';
-                                    isOptionStage = true;
-                                    isAnimating = false;
-                                });
-                            }, 1500);
-                        });
-                        break;
-                    default:
-                        if (isOptionStage) {
-                            playAnimation('shake').then(() => {
-                                isAnimating = false;
-                            });
-                        } else {
-                            showDialog('别点啦~ 先选一个吧！').then(() => {
-                                optionContainer.style.display = 'flex';
-                                isOptionStage = true;
-                                isAnimating = false;
-                            });
-                        }
-                        break;
-                }
-            }
-
-            // 绑定点击和触摸事件（微信兼容）
-            character.addEventListener('click', handleCharacterClick);
-            character.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // 阻止微信默认行为
-                handleCharacterClick();
-            });
-
-            // 初始提示
-            setTimeout(() => {
-                showDialog('点击我开始互动~').then(() => {
-                    setTimeout(() => {
-                        hideDialog();
-                    }, 2000);
-                });
-            }, 1000);
         }
 
-        // 微信浏览器兼容：页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            // 修复微信弹性滚动问题
-            document.body.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-            }, { passive: false });
+        // 清除所有预览
+        function clearPreview() {
+            if (previewPosition) {
+                const { i, j } = previewPosition;
+                const cell = document.querySelector(`.cell[data-i="${i}"][data-j="${j}"]`);
+                if (cell) {
+                    cell.classList.remove("preview");
+                }
+                previewPosition = null;
+            }
+        }
+
+        // 监听房间数据变化
+        function listenToRoomChanges() {
+            const subscription = supabase.from('rooms').on('*', (payload) => {
+                if (payload.new?.id !== roomId) return;
+
+                // 同步棋盘和状态
+                board = payload.new.board;
+                gameOver = payload.new.gameOver;
+                renderBoard();
+
+                // 清除本地预览，因为回合已切换
+                clearPreview();
+
+                if (gameOver) {
+                    if (payload.new.winner === "draw") {
+                        statusEl.textContent = `🤝 游戏结束！平局！`;
+                    } else {
+                        statusEl.textContent = `🎉 游戏结束！${payload.new.winner}获胜！`;
+                    }
+                    playAgainBtn.style.display = "block";
+                    return;
+                }
+
+                // 同步回合
+                isMyTurn = (payload.new.currentTurn === (isBlack ? "black" : "white"));
+                statusEl.textContent = isMyTurn 
+                    ? `🎯 轮到你落子（${isBlack ? "黑方" : "白方"}）` 
+                    : `⌛ 等待对手落子...`;
+            }).subscribe();
+            
+            return () => subscription.unsubscribe();
+        }
+
+        // 渲染棋盘
+        function renderBoard() {
+            const cells = document.querySelectorAll(".cell");
+            cells.forEach((cell) => {
+                const i = parseInt(cell.dataset.i);
+                const j = parseInt(cell.dataset.j);
+                cell.className = "cell"; // 重置所有样式
+                if (board[i][j]) {
+                    cell.classList.add(board[i][j]);
+                }
+            });
+        }
+
+        // 胜负判断
+        function checkWin(x, y) {
+            const color = board[x][y];
+            const directions = [[[-1,0],[1,0]],[[0,-1],[0,1]],[[-1,-1],[1,1]],[[-1,1],[1,-1]]];
+            for (const [dir1, dir2] of directions) {
+                let count = 1;
+                for (let i = 1; i < 5; i++) {
+                    const nx = x + dir1[0]*i; const ny = y + dir1[1]*i;
+                    if (nx>=0&&nx<15&&ny>=0&&ny<15&&board[nx][ny]===color) count++; else break;
+                }
+                for (let i = 1; i < 5; i++) {
+                    const nx = x + dir2[0]*i; const ny = y + dir2[1]*i;
+                    if (nx>=0&&nx<15&&ny>=0&&ny<15&&board[nx][ny]===color) count++; else break;
+                }
+                if (count>=5) return color === "black" ? "黑方" : "白方";
+            }
+            return null;
+        }
+
+        // 平局判断
+        function checkDraw() {
+            for (let i = 0; i < 15; i++) {
+                for (let j = 0; j < 15; j++) {
+                    if (board[i][j] === null) {
+                        return false; // 还有空位，不是平局
+                    }
+                }
+            }
+            // 棋盘已满且无人获胜
+            return true;
+        }
+
+        // 重置房间数据（用于新游戏或再来一局）
+        async function resetRoom() {
+            const newBoard = Array(15).fill().map(() => Array(15).fill(null));
+            await supabase.from('rooms').upsert({ 
+                id: roomId,
+                blackPlayer: true,
+                whitePlayer: isBlack ? false : true, // 如果是加入者，whitePlayer为true
+                currentTurn: "black",
+                board: newBoard,
+                gameOver: false,
+                winner: null
+            });
+            board = newBoard;
+            gameOver = false;
+            renderBoard();
+            playAgainBtn.style.display = "none";
+        }
+
+        // 再来一局按钮事件
+        playAgainBtn.addEventListener("click", async () => {
+            // 只有房间创建者（黑方）可以发起再来一局
+            if (isBlack) {
+                await resetRoom();
+                statusEl.textContent = `新游戏开始！你是黑方，先下`;
+                isMyTurn = true;
+            } else {
+                statusEl.textContent = `等待房主开始新游戏...`;
+            }
+            playAgainBtn.style.display = "none";
         });
     </script>
 </body>
