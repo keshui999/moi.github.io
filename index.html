@@ -206,15 +206,15 @@
     <div class="toast" id="toast">提示</div>
 
     <!-- 引入Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script>
-        // 配置替换为你的Supabase信息
-        const SUPABASE_URL = "你的Supabase项目URL";
-        const SUPABASE_ANON_KEY = "你的Supabase anon公钥";
+        // 已填入你的Supabase配置
+        const SUPABASE_URL = "https://ftcxvlihfzwxkwzewqph.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y3h2bGloZnp3eGt3emV3cXBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2MzYyNzgsImV4cCI6MjA4MTIxMjI3OH0.FZyhUAijmPtx7hF7lCopZCx95XYK3qfSWSmKUEgX_7k";
 
         // 全局变量
-        let supabase;
-        let roomSubscription;
+        let supabase = null;
+        let roomSubscription = null;
         let currentRoomId = "";
         let isHost = false;
         let isMyTurn = false;
@@ -234,19 +234,23 @@
 
         // 初始化Supabase
         function initSupabase() {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                showToast("Supabase初始化成功");
+            } catch (err) {
+                console.error("Supabase初始化失败：", err);
+                showToast("Supabase初始化失败，请检查配置");
+            }
         }
 
         // 初始化棋盘
         function initBoard() {
             chessBoard.innerHTML = "";
-            // 添加星位
             ["center", "tl", "tr", "bl", "br"].forEach(cls => {
                 const star = document.createElement("div");
                 star.className = `star ${cls}`;
                 chessBoard.appendChild(star);
             });
-            // 创建交叉点
             for (let i = 0; i < 15; i++) {
                 for (let j = 0; j < 15; j++) {
                     const intersection = document.createElement("div");
@@ -262,7 +266,7 @@
 
         // 处理落子
         async function handleCellClick(e) {
-            if (!isMyTurn || gameOver) return;
+            if (!isMyTurn || gameOver || !supabase) return;
             const i = parseInt(e.target.dataset.i);
             const j = parseInt(e.target.dataset.j);
             if (board[i][j] !== null) return;
@@ -271,7 +275,6 @@
             board[i][j] = color;
             renderBoard();
 
-            // 检查胜负
             const winner = checkWin(i, j);
             if (winner) {
                 gameOver = true;
@@ -282,7 +285,6 @@
                 return;
             }
 
-            // 检查平局
             if (checkDraw()) {
                 gameOver = true;
                 updateGameStatus(`🤝 游戏平局！`);
@@ -292,14 +294,14 @@
                 return;
             }
 
-            // 更新房间数据
             isMyTurn = false;
             updateGameStatus("等待对手落子...");
             await updateRoomData({ board, currentTurn: color === "black" ? "white" : "black" });
         }
 
-        // 更新房间数据到Supabase
+        // 更新房间数据
         async function updateRoomData(data) {
+            if (!supabase) return;
             try {
                 const { error } = await supabase
                     .from("rooms")
@@ -312,7 +314,7 @@
             }
         }
 
-        // 处理房间数据更新
+        // 处理房间更新
         function handleRoomUpdate(payload) {
             const newData = payload.new;
             board = newData.board;
@@ -339,6 +341,10 @@
 
         // 创建房间
         async function createRoom() {
+            if (!supabase) {
+                showToast("Supabase未初始化，请检查配置");
+                return;
+            }
             const inputId = roomIdInput.value.trim();
             currentRoomId = String(inputId);
             if (!/^\d{4}$/.test(currentRoomId)) {
@@ -374,6 +380,10 @@
 
         // 加入房间
         async function joinRoom() {
+            if (!supabase) {
+                showToast("Supabase未初始化，请检查配置");
+                return;
+            }
             const inputId = roomIdInput.value.trim();
             currentRoomId = String(inputId);
             if (!/^\d{4}$/.test(currentRoomId)) {
@@ -417,6 +427,7 @@
 
         // 初始化实时订阅
         function initRoomSubscription() {
+            if (!supabase) return;
             if (roomSubscription) {
                 supabase.removeChannel(roomSubscription);
             }
@@ -513,6 +524,7 @@
 
         // 再来一局
         playAgainBtn.addEventListener("click", async () => {
+            if (!supabase) return;
             board = Array(15).fill().map(() => Array(15).fill(null));
             gameOver = false;
             playAgainBtn.style.display = "none";
@@ -531,10 +543,8 @@
         hostBtn.addEventListener("click", createRoom);
         guestBtn.addEventListener("click", joinRoom);
 
-        // 初始化
-        window.onload = () => {
-            initSupabase();
-        };
+        // 页面加载后初始化
+        window.addEventListener("load", initSupabase);
 
         // 阻止下拉刷新
         document.addEventListener("touchmove", (e) => {
