@@ -97,12 +97,12 @@
             height: 24px; /* 固定高度，防止布局跳动 */
         }
 
-        /* 棋盘样式（现代感升级） */
+        /* 棋盘样式 */
         .board {
             display: grid;
             grid-template-columns: repeat(15, 1fr);
             gap: 2px;
-            background-color: #e9d8a6; /* 更真实的棋盘木色 */
+            background-color: #e9d8a6;
             padding: 8px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -111,7 +111,7 @@
 
         .cell {
             aspect-ratio: 1/1;
-            background-color: #f9f5f0; /* 更柔和的棋盘底色 */
+            background-color: #f9f5f0;
             border-radius: 3px;
             cursor: pointer;
             position: relative;
@@ -119,10 +119,10 @@
         }
 
         .cell:hover:not(.black):not(.white):not(.preview) {
-            background-color: #ede9e0; /* 鼠标悬停效果 */
+            background-color: #ede9e0;
         }
 
-        /* 落子预览（半透明） */
+        /* 落子预览 */
         .cell.preview::after {
             content: "";
             position: absolute;
@@ -132,7 +132,7 @@
             width: 82%;
             height: 82%;
             border-radius: 50%;
-            opacity: 0.4; /* 半透明效果 */
+            opacity: 0.4;
             transition: transform 0.2s ease;
         }
 
@@ -144,7 +144,7 @@
             background: radial-gradient(circle at 30% 30%, #ffffff, #d0d0d0);
         }
 
-        /* 棋子样式（精致3D效果） */
+        /* 棋子样式 */
         .cell.black::after {
             content: "";
             position: absolute;
@@ -153,12 +153,11 @@
             transform: translate(-50%, -50%);
             width: 82%;
             height: 82%;
-            background: radial-gradient(circle at 30% 30%, #666, #000); /* 3D黑色棋子 */
+            background: radial-gradient(circle at 30% 30%, #666, #000);
             border-radius: 50%;
-            box-shadow: 
-                inset 0 -3px 5px rgba(0, 0, 0, 0.5),
-                0 4px 6px rgba(0, 0, 0, 0.2);
+            box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s ease;
+            animation: placeStone 0.3s ease-out;
         }
 
         .cell.white::after {
@@ -169,17 +168,10 @@
             transform: translate(-50%, -50%);
             width: 82%;
             height: 82%;
-            background: radial-gradient(circle at 30% 30%, #ffffff, #d0d0d0); /* 3D白色棋子 */
+            background: radial-gradient(circle at 30% 30%, #ffffff, #d0d0d0);
             border-radius: 50%;
-            box-shadow: 
-                inset 0 -3px 5px rgba(0, 0, 0, 0.1),
-                0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease;
-        }
-
-        /* 落子动画 */
-        .cell.black::after,
-        .cell.white::after {
             animation: placeStone 0.3s ease-out;
         }
 
@@ -189,19 +181,21 @@
             100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
 
+        /* 再来一局按钮 */
+        #playAgainBtn {
+            margin-top: 15px;
+            padding: 12px 24px;
+            background-color: #48bb78;
+            display: none;
+            flex: none;
+            width: auto;
+        }
+
         /* 页脚 */
         .footer {
             font-size: 14px;
             color: #718096;
             margin-top: 15px;
-        }
-
-        /* 再来一局按钮 */
-        #playAgainBtn {
-            margin-top: 15px;
-            padding: 12px 24px;
-            background-color: #48bb78; /* 绿色 */
-            display: none; /* 默认隐藏 */
         }
     </style>
 </head>
@@ -215,7 +209,7 @@
             <button class="btn" id="joinRoom">加入</button>
         </div>
         
-        <div id="status">请创建或加入房间</div>
+        <div id="status">正在检测连接...</div>
         
         <div class="board" id="board"></div>
         
@@ -224,116 +218,162 @@
         <div class="footer">sleepy出品，快乐加倍</div>
     </div>
 
-    <!-- 引入Supabase -->
+    <!-- 引入Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script>
-        // Supabase配置（已为你填好）
+        // Supabase配置
         const supabaseConfig = {
             url: "https://ftcxvlihfzwxkwzewqph.supabase.co",
             anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y3h2bGloZnp3eGt3emV3cXBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2MzYyNzgsImV4cCI6MjA4MTIxMjI3OH0.FZyhUAijmPtx7hF7lCopZCx95XYK3qfSWSmKUEgX_7k"
         };
 
         // 初始化Supabase
-        const supabase = supabase.createClient(
+        const supabase = window.supabase.createClient(
             supabaseConfig.url,
             supabaseConfig.anonKey
         );
+
+        // DOM元素
+        const roomIdInput = document.getElementById("roomId");
+        const statusEl = document.getElementById("status");
+        const boardEl = document.getElementById("board");
+        const createRoomBtn = document.getElementById("createRoom");
+        const joinRoomBtn = document.getElementById("joinRoom");
+        const playAgainBtn = document.getElementById("playAgainBtn");
 
         // 全局变量
         let roomId = "";
         let isBlack = true;
         let isMyTurn = false;
         let board = Array(15).fill().map(() => Array(15).fill(null));
-        let previewPosition = null; // 用于存储预览棋子的位置
+        let previewPosition = null;
         let gameOver = false;
-
-        // DOM元素
-        const boardEl = document.getElementById("board");
-        const statusEl = document.getElementById("status");
-        const playAgainBtn = document.getElementById("playAgainBtn");
+        let subscription = null;
 
         // 初始化棋盘
-        for (let i = 0; i < 15; i++) {
-            for (let j = 0; j < 15; j++) {
-                const cell = document.createElement("div");
-                cell.className = "cell";
-                cell.dataset.i = i;
-                cell.dataset.j = j;
-                cell.addEventListener("click", handleCellClick);
-                boardEl.appendChild(cell);
+        function initBoard() {
+            boardEl.innerHTML = "";
+            for (let i = 0; i < 15; i++) {
+                for (let j = 0; j < 15; j++) {
+                    const cell = document.createElement("div");
+                    cell.className = "cell";
+                    cell.dataset.i = i;
+                    cell.dataset.j = j;
+                    cell.addEventListener("click", handleCellClick);
+                    boardEl.appendChild(cell);
+                }
+            }
+        }
+
+        // 检测Supabase连接
+        async function checkSupabaseConnection() {
+            try {
+                const { data, error } = await supabase.auth.getUser();
+                if (error) throw error;
+                statusEl.textContent = "✅ Supabase连接成功！可创建房间";
+                statusEl.style.color = "#48bb78";
+            } catch (err) {
+                statusEl.textContent = `❌ 连接失败：${err.message}`;
+                statusEl.style.color = "#e53e3e";
+                console.error("Supabase连接错误：", err);
             }
         }
 
         // 创建房间
-        document.getElementById("createRoom").addEventListener("click", async () => {
-            const input = document.getElementById("roomId");
-            roomId = input.value.trim() || Math.floor(1000 + Math.random() * 9000).toString();
-            input.value = roomId;
+        async function createRoom() {
+            if (gameOver) return;
+            roomId = roomIdInput.value.trim() || Math.floor(1000 + Math.random() * 9000).toString();
+            roomIdInput.value = roomId;
 
-            await resetRoom(); // 使用新的重置房间函数
-
-            isBlack = true;
-            isMyTurn = true;
-            statusEl.textContent = `房间创建成功！房间号：${roomId}（你是黑方，先下）`;
-            
-            listenToRoomChanges();
-        });
+            try {
+                await resetRoom();
+                isBlack = true;
+                isMyTurn = true;
+                statusEl.textContent = `房间创建成功！房间号：${roomId}（你是黑方，先下）`;
+                statusEl.style.color = "#4a5568";
+                listenToRoomChanges();
+            } catch (err) {
+                statusEl.textContent = `创建失败：${err.message}`;
+                statusEl.style.color = "#e53e3e";
+                console.error("创建房间错误：", err);
+            }
+        }
 
         // 加入房间
-        document.getElementById("joinRoom").addEventListener("click", async () => {
-            roomId = document.getElementById("roomId").value.trim();
-            if (!roomId) { alert("请输入房间号！"); return; }
-
-            const { data: roomData } = await supabase.from('rooms').select('*').eq('id', roomId).single();
-            
-            if (!roomData) {
-                alert("房间不存在！");
-                return;
-            }
-            if (roomData.whitePlayer && !roomData.gameOver) {
-                alert("房间已满！");
+        async function joinRoom() {
+            if (gameOver) return;
+            roomId = roomIdInput.value.trim();
+            if (!roomId) {
+                statusEl.textContent = "请输入房间号！";
+                statusEl.style.color = "#ed8936";
                 return;
             }
 
-            // 如果房间存在但游戏已结束，自动加入并准备开始新游戏
-            if (roomData.gameOver) {
-                await resetRoom();
-            } else {
-                await supabase.from('rooms').update({ whitePlayer: true }).eq('id', roomId);
-            }
-            
-            isBlack = false;
-            isMyTurn = false;
-            statusEl.textContent = `加入房间成功！（你是白方，等待黑方落子）`;
-            
-            board = roomData.board || Array(15).fill().map(() => Array(15).fill(null));
-            renderBoard();
-            
-            listenToRoomChanges();
-        });
+            try {
+                const { data: roomData, error } = await supabase
+                    .from('rooms')
+                    .select('*')
+                    .eq('id', roomId)
+                    .single();
 
-        // 处理落子（新增预览和确认逻辑）
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        statusEl.textContent = "房间不存在！";
+                        statusEl.style.color = "#e53e3e";
+                    } else {
+                        throw error;
+                    }
+                    return;
+                }
+
+                if (roomData.whitePlayer && !roomData.gameOver) {
+                    statusEl.textContent = "房间已满！";
+                    statusEl.style.color = "#e53e3e";
+                    return;
+                }
+
+                if (roomData.gameOver) {
+                    await resetRoom();
+                } else {
+                    await supabase
+                        .from('rooms')
+                        .update({ whitePlayer: true })
+                        .eq('id', roomId);
+                }
+
+                isBlack = false;
+                isMyTurn = false;
+                board = roomData.board || Array(15).fill().map(() => Array(15).fill(null));
+                renderBoard();
+                statusEl.textContent = `加入房间成功！（你是白方，等待黑方落子）`;
+                statusEl.style.color = "#4a5568";
+                listenToRoomChanges();
+            } catch (err) {
+                statusEl.textContent = `加入失败：${err.message}`;
+                statusEl.style.color = "#e53e3e";
+                console.error("加入房间错误：", err);
+            }
+        }
+
+        // 处理落子点击
         async function handleCellClick(e) {
             if (!roomId || !isMyTurn || gameOver) return;
             const i = parseInt(e.target.dataset.i);
             const j = parseInt(e.target.dataset.j);
             if (board[i][j] !== null) return;
 
-            // 如果点击的是预览位置，则确认落子
+            // 预览或确认落子
             if (previewPosition && previewPosition.i === i && previewPosition.j === j) {
-                // 清除所有预览
                 clearPreview();
-
-                // 更新本地棋盘
                 board[i][j] = isBlack ? "black" : "white";
                 renderBoard();
 
                 // 检查胜负
-                let winner = checkWin(i, j);
+                const winner = checkWin(i, j);
                 if (winner) {
                     gameOver = true;
                     statusEl.textContent = `🎉 游戏结束！${winner}获胜！`;
+                    statusEl.style.color = "#4a5568";
                     await supabase.from('rooms').update({ gameOver: true, winner: winner }).eq('id', roomId);
                     playAgainBtn.style.display = "block";
                     return;
@@ -343,22 +383,23 @@
                 if (checkDraw()) {
                     gameOver = true;
                     statusEl.textContent = `🤝 游戏结束！平局！`;
+                    statusEl.style.color = "#4a5568";
                     await supabase.from('rooms').update({ gameOver: true, winner: "draw" }).eq('id', roomId);
                     playAgainBtn.style.display = "block";
                     return;
                 }
 
-                // 同步到数据库（切换回合）
+                // 同步到数据库
                 const nextTurn = isBlack ? "white" : "black";
-                await supabase.from('rooms').update({ 
-                    board: board,
-                    currentTurn: nextTurn
-                }).eq('id', roomId);
+                await supabase
+                    .from('rooms')
+                    .update({ board: board, currentTurn: nextTurn })
+                    .eq('id', roomId);
 
                 isMyTurn = false;
                 statusEl.textContent = `⌛ 等待对手落子...`;
+                statusEl.style.color = "#4a5568";
             } else {
-                // 否则，显示预览
                 clearPreview();
                 previewPosition = { i, j };
                 const cell = document.querySelector(`.cell[data-i="${i}"][data-j="${j}"]`);
@@ -366,61 +407,58 @@
             }
         }
 
-        // 清除所有预览
+        // 清除预览
         function clearPreview() {
             if (previewPosition) {
                 const { i, j } = previewPosition;
                 const cell = document.querySelector(`.cell[data-i="${i}"][data-j="${j}"]`);
-                if (cell) {
-                    cell.classList.remove("preview");
-                }
+                if (cell) cell.classList.remove("preview", "black", "white");
                 previewPosition = null;
             }
         }
 
         // 监听房间数据变化
         function listenToRoomChanges() {
-            const subscription = supabase.from('rooms').on('*', (payload) => {
-                if (payload.new?.id !== roomId) return;
+            // 取消之前的订阅
+            if (subscription) subscription.unsubscribe();
 
-                // 同步棋盘和状态
-                board = payload.new.board;
-                gameOver = payload.new.gameOver;
-                renderBoard();
+            subscription = supabase
+                .channel(`room:${roomId}`)
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, (payload) => {
+                    const newData = payload.new;
+                    board = newData.board;
+                    gameOver = newData.gameOver;
+                    renderBoard();
+                    clearPreview();
 
-                // 清除本地预览，因为回合已切换
-                clearPreview();
-
-                if (gameOver) {
-                    if (payload.new.winner === "draw") {
-                        statusEl.textContent = `🤝 游戏结束！平局！`;
-                    } else {
-                        statusEl.textContent = `🎉 游戏结束！${payload.new.winner}获胜！`;
+                    if (gameOver) {
+                        if (newData.winner === "draw") {
+                            statusEl.textContent = `🤝 游戏结束！平局！`;
+                        } else {
+                            statusEl.textContent = `🎉 游戏结束！${newData.winner}获胜！`;
+                        }
+                        statusEl.style.color = "#4a5568";
+                        playAgainBtn.style.display = "block";
+                        return;
                     }
-                    playAgainBtn.style.display = "block";
-                    return;
-                }
 
-                // 同步回合
-                isMyTurn = (payload.new.currentTurn === (isBlack ? "black" : "white"));
-                statusEl.textContent = isMyTurn 
-                    ? `🎯 轮到你落子（${isBlack ? "黑方" : "白方"}）` 
-                    : `⌛ 等待对手落子...`;
-            }).subscribe();
-            
-            return () => subscription.unsubscribe();
+                    isMyTurn = (newData.currentTurn === (isBlack ? "black" : "white"));
+                    statusEl.textContent = isMyTurn 
+                        ? `🎯 轮到你落子（${isBlack ? "黑方" : "白方"}）` 
+                        : `⌛ 等待对手落子...`;
+                    statusEl.style.color = "#4a5568";
+                })
+                .subscribe();
         }
 
         // 渲染棋盘
         function renderBoard() {
             const cells = document.querySelectorAll(".cell");
-            cells.forEach((cell) => {
-                const i = parseInt(cell.dataset.i);
-                const j = parseInt(cell.dataset.j);
-                cell.className = "cell"; // 重置所有样式
-                if (board[i][j]) {
-                    cell.classList.add(board[i][j]);
-                }
+            cells.forEach((cell, index) => {
+                const i = Math.floor(index / 15);
+                const j = index % 15;
+                cell.className = "cell";
+                if (board[i][j]) cell.classList.add(board[i][j]);
             });
         }
 
@@ -430,15 +468,27 @@
             const directions = [[[-1,0],[1,0]],[[0,-1],[0,1]],[[-1,-1],[1,1]],[[-1,1],[1,-1]]];
             for (const [dir1, dir2] of directions) {
                 let count = 1;
+                // 往第一个方向遍历
                 for (let i = 1; i < 5; i++) {
-                    const nx = x + dir1[0]*i; const ny = y + dir1[1]*i;
-                    if (nx>=0&&nx<15&&ny>=0&&ny<15&&board[nx][ny]===color) count++; else break;
+                    const nx = x + dir1[0] * i;
+                    const ny = y + dir1[1] * i;
+                    if (nx >= 0 && nx < 15 && ny >= 0 && ny < 15 && board[nx][ny] === color) {
+                        count++;
+                    } else {
+                        break;
+                    }
                 }
+                // 往第二个方向遍历
                 for (let i = 1; i < 5; i++) {
-                    const nx = x + dir2[0]*i; const ny = y + dir2[1]*i;
-                    if (nx>=0&&nx<15&&ny>=0&&ny<15&&board[nx][ny]===color) count++; else break;
+                    const nx = x + dir2[0] * i;
+                    const ny = y + dir2[1] * i;
+                    if (nx >= 0 && nx < 15 && ny >= 0 && ny < 15 && board[nx][ny] === color) {
+                        count++;
+                    } else {
+                        break;
+                    }
                 }
-                if (count>=5) return color === "black" ? "黑方" : "白方";
+                if (count >= 5) return color === "black" ? "黑方" : "白方";
             }
             return null;
         }
@@ -447,22 +497,19 @@
         function checkDraw() {
             for (let i = 0; i < 15; i++) {
                 for (let j = 0; j < 15; j++) {
-                    if (board[i][j] === null) {
-                        return false; // 还有空位，不是平局
-                    }
+                    if (board[i][j] === null) return false;
                 }
             }
-            // 棋盘已满且无人获胜
             return true;
         }
 
-        // 重置房间数据（用于新游戏或再来一局）
+        // 重置房间数据
         async function resetRoom() {
             const newBoard = Array(15).fill().map(() => Array(15).fill(null));
             await supabase.from('rooms').upsert({ 
                 id: roomId,
                 blackPlayer: true,
-                whitePlayer: isBlack ? false : true, // 如果是加入者，whitePlayer为true
+                whitePlayer: isBlack ? false : true,
                 currentTurn: "black",
                 board: newBoard,
                 gameOver: false,
@@ -474,18 +521,30 @@
             playAgainBtn.style.display = "none";
         }
 
-        // 再来一局按钮事件
-        playAgainBtn.addEventListener("click", async () => {
-            // 只有房间创建者（黑方）可以发起再来一局
+        // 再来一局
+        async function playAgain() {
             if (isBlack) {
                 await resetRoom();
                 statusEl.textContent = `新游戏开始！你是黑方，先下`;
+                statusEl.style.color = "#4a5568";
                 isMyTurn = true;
             } else {
                 statusEl.textContent = `等待房主开始新游戏...`;
+                statusEl.style.color = "#4a5568";
             }
             playAgainBtn.style.display = "none";
-        });
+        }
+
+        // 绑定事件
+        createRoomBtn.addEventListener("click", createRoom);
+        joinRoomBtn.addEventListener("click", joinRoom);
+        playAgainBtn.addEventListener("click", playAgain);
+
+        // 页面加载初始化
+        window.onload = () => {
+            initBoard();
+            checkSupabaseConnection();
+        };
     </script>
 </body>
 </html>
