@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="referrer" content="no-referrer">
     <title>sleepy五子棋</title>
     <style>
         /* 全局样式重置与基础设置 */
@@ -10,125 +11,167 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
             color: #2d3748;
+            -webkit-tap-highlight-color: transparent; /* 去除微信点击高亮 */
         }
 
         /* 主容器 */
         .container {
-            background-color: white;
+            background-color: #ffffff;
             border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             text-align: center;
         }
 
         /* 标题 */
         h1 {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 600;
             color: #2d3748;
-            margin-bottom: 25px;
-            letter-spacing: -0.5px;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
         }
 
-        /* 房间号区域 */
+        /* 功能按钮区 */
         .room-area {
             display: flex;
-            gap: 12px;
-            margin-bottom: 25px;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         #roomId {
             flex: 1;
-            padding: 14px 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
             outline: none;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            font-size: 15px;
+            transition: border-color 0.2s ease;
         }
 
         #roomId:focus {
             border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.1);
         }
 
         .btn {
-            padding: 14px 22px;
+            padding: 12px 15px;
             background-color: #4299e1;
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.2s ease;
             flex: 1;
         }
 
         .btn:hover {
             background-color: #3182ce;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.2);
         }
 
         .btn:active {
-            transform: translateY(0);
+            transform: scale(0.98);
+        }
+
+        /* 清理数据按钮 */
+        .clean-btn {
+            background-color: #9f7aea;
+            margin-bottom: 15px;
+            width: 100%;
+            flex: none;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .clean-btn:hover {
+            background-color: #805ad5;
         }
 
         /* 状态提示 */
         #status {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 500;
             color: #4a5568;
-            margin-bottom: 20px;
-            height: 24px; /* 固定高度，防止布局跳动 */
+            margin-bottom: 15px;
+            height: 22px; /* 固定高度，防止布局跳动 */
+            line-height: 22px;
         }
 
-        /* 棋盘样式 - 交叉点版本 */
+        /* 棋盘样式 - 优化版（轻量化） */
         .board {
             position: relative;
             background-color: #e9d8a6;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 25px;
+            border: 3px solid #b98f5e; /* 木质边框 */
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
             aspect-ratio: 1/1;
             width: 100%;
+            background-image: 
+                linear-gradient(#5c4033 1px, transparent 1px),
+                linear-gradient(90deg, #5c4033 1px, transparent 1px); /* 棋盘格背景图替代JS生成线条 */
+            background-size: calc(100% / 14), calc(100% / 14); /* 15个点14个间隔 */
+            background-position: 0 0;
         }
 
-        /* 棋子的父容器，用于定位 */
-        .cell {
+        /* 天元和星位标记（轻量化） */
+        .board::before, .board::after,
+        .board .star-1, .board .star-2, .board .star-3, .board .star-4 {
+            content: '';
             position: absolute;
-            width: 100%;
-            height: 100%;
+            width: 6px;
+            height: 6px;
+            background-color: #5c4033;
+            border-radius: 50%;
+            z-index: 5;
+        }
+
+        /* 天元 */
+        .board::before {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 星位 */
+        .board::after {
+            top: calc(100% * 4 / 14);
+            left: calc(100% * 4 / 14);
+        }
+        .board .star-1 { top: calc(100% * 4 / 14); left: calc(100% * 10 / 14); }
+        .board .star-2 { top: calc(100% * 10 / 14); left: calc(100% * 4 / 14); }
+        .board .star-3 { top: calc(100% * 10 / 14); left: calc(100% * 10 / 14); }
+        .board .star-4 { display: none; } /* 简化星位，减少元素 */
+
+        /* 交叉点点击区域 */
+        .intersection {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
             cursor: pointer;
         }
 
-        /* 为每个交叉点创建一个点击区域 */
-        .intersection {
-            position: absolute;
-            width: 20px; /* 点击区域大小 */
-            height: 20px;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10; /* 确保点击区域在最上层 */
-        }
-
-        /* 高亮鼠标悬停的交叉点 */
-        .intersection:hover {
-            background-color: rgba(92, 64, 51, 0.1);
+        /* 悬停高亮 */
+        .intersection:hover:not(.black):not(.white) {
+            background-color: rgba(92, 64, 51, 0.15);
         }
 
         /* 落子预览 */
@@ -138,11 +181,10 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 82%;
-            height: 82%;
+            width: 80%;
+            height: 80%;
             border-radius: 50%;
             opacity: 0.4;
-            transition: transform 0.2s ease;
         }
 
         .intersection.preview.black::after {
@@ -150,23 +192,22 @@
         }
 
         .intersection.preview.white::after {
-            background: radial-gradient(circle at 30% 30%, #ffffff, #d0d0d0);
+            background: radial-gradient(circle at 30% 30%, #fff, #d0d0d0);
         }
 
-        /* 棋子样式 */
+        /* 棋子样式（优化质感） */
         .intersection.black::after {
             content: "";
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 82%;
-            height: 82%;
-            background: radial-gradient(circle at 30% 30%, #666, #000);
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle at 35% 35%, #555, #000);
             border-radius: 50%;
-            box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s ease;
-            animation: placeStone 0.3s ease-out;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 -1px 2px rgba(255,255,255,0.1);
+            animation: placeStone 0.2s ease-out;
         }
 
         .intersection.white::after {
@@ -175,34 +216,37 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 82%;
-            height: 82%;
-            background: radial-gradient(circle at 30% 30%, #ffffff, #d0d0d0);
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle at 35% 35%, #fff, #d0d0d0);
             border-radius: 50%;
-            box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease;
-            animation: placeStone 0.3s ease-out;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 -1px 2px rgba(0,0,0,0.05);
+            animation: placeStone 0.2s ease-out;
         }
 
         @keyframes placeStone {
             0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-            70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            80% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
             100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
 
         /* 再来一局按钮 */
         #playAgainBtn {
-            margin-top: 15px;
-            padding: 12px 24px;
+            margin-top: 10px;
+            padding: 10px 20px;
             background-color: #48bb78;
             display: none;
             flex: none;
-            width: auto;
+            width: 100%;
+        }
+
+        #playAgainBtn:hover {
+            background-color: #38a169;
         }
 
         /* 页脚 */
         .footer {
-            font-size: 14px;
+            font-size: 13px;
             color: #718096;
             margin-top: 15px;
         }
@@ -221,7 +265,7 @@
             z-index: 1000;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.2s ease;
         }
 
         .debug-modal.active {
@@ -231,29 +275,29 @@
 
         .debug-content {
             background-color: white;
-            padding: 25px;
-            border-radius: 15px;
-            max-width: 80%;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 85%;
             max-height: 70%;
             overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
             text-align: left;
         }
 
         .debug-content h3 {
             margin-top: 0;
             color: #2d3748;
-            font-size: 20px;
+            font-size: 18px;
             border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .debug-content p {
-            margin: 8px 0;
-            font-size: 16px;
+            margin: 6px 0;
+            font-size: 14px;
             color: #4a5568;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .debug-content .label {
@@ -261,29 +305,44 @@
             color: #2d3748;
         }
 
-        .debug-content .value {
-            color: #718096;
-        }
-
-        .debug-content .success {
-            color: #48bb78;
-        }
-
-        .debug-content .error {
-            color: #e53e3e;
-        }
+        .debug-content .success { color: #48bb78; }
+        .debug-content .error { color: #e53e3e; }
 
         .debug-content .btn {
-            margin-top: 20px;
+            margin-top: 15px;
             width: 100%;
-            padding: 12px;
-            background-color: #4299e1;
+            padding: 10px;
+        }
+
+        /* 提示弹窗 */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 1001;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .toast.active {
+            opacity: 1;
+            pointer-events: all;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>sleepy五子棋</h1>
+        
+        <!-- 清理数据按钮 -->
+        <button class="btn clean-btn" id="cleanDataBtn">一键清理重复房间</button>
         
         <div class="room-area">
             <input type="text" id="roomId" placeholder="输入4位房间号">
@@ -293,11 +352,16 @@
         
         <div id="status">正在检测连接...</div>
         
-        <div class="board" id="board"></div>
+        <div class="board" id="board">
+            <div class="star-1"></div>
+            <div class="star-2"></div>
+            <div class="star-3"></div>
+            <div class="star-4"></div>
+        </div>
         
         <button class="btn" id="playAgainBtn">再来一局</button>
         
-        <div class="footer">sleepy出品，快乐加倍</div>
+        <div class="footer">sleepy出品 © 2025</div>
     </div>
 
     <!-- 调试弹窗 -->
@@ -311,12 +375,15 @@
             <p><span class="label">当前回合:</span> <span id="debug-currentTurn" class="value">-</span></p>
             <p><span class="label">游戏是否结束:</span> <span id="debug-gameOver" class="value">-</span></p>
             <p><span class="label">获胜者:</span> <span id="debug-winner" class="value">-</span></p>
-            <button class="btn" onclick="document.getElementById('debugModal').classList.remove('active')">关闭</button>
+            <button class="btn" onclick="closeModal()">关闭</button>
         </div>
     </div>
 
-    <!-- 引入Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 提示弹窗 -->
+    <div class="toast" id="toast">操作提示</div>
+
+    <!-- 引入Supabase SDK（轻量化CDN） -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4/dist/umd/supabase.min.js"></script>
     <script>
         // Supabase配置
         const supabaseConfig = {
@@ -337,7 +404,9 @@
         const createRoomBtn = document.getElementById("createRoom");
         const joinRoomBtn = document.getElementById("joinRoom");
         const playAgainBtn = document.getElementById("playAgainBtn");
+        const cleanDataBtn = document.getElementById("cleanDataBtn");
         const debugModal = document.getElementById("debugModal");
+        const toast = document.getElementById("toast");
 
         // 全局变量
         let roomId = "";
@@ -347,42 +416,26 @@
         let previewPosition = null;
         let gameOver = false;
         let subscription = null;
+        let isOpponentJoined = false; // 新增：标记对手是否已加入
 
-        // 初始化棋盘（交叉点版本）
+        // 初始化棋盘（轻量化）
         function initBoard() {
-            boardEl.innerHTML = "";
-            
-            // 计算每个格子的大小
-            const gridSize = 14; // 15个点有14个间隔
-            const cellSizePercent = 100 / gridSize;
+            // 清空棋盘原有交叉点
+            const oldContainer = boardEl.querySelector('div[style*="position: absolute; width: 100%"]');
+            if (oldContainer) oldContainer.remove();
 
-            // 创建棋盘线
-            for (let i = 0; i < 15; i++) {
-                // 创建垂直线
-                const vLine = document.createElement("div");
-                vLine.style.position = "absolute";
-                vLine.style.width = "1px";
-                vLine.style.height = "100%";
-                vLine.style.backgroundColor = "#5c4033";
-                vLine.style.left = `${(i * cellSizePercent)}%`;
-                boardEl.appendChild(vLine);
-
-                // 创建水平线
-                const hLine = document.createElement("div");
-                hLine.style.position = "absolute";
-                hLine.style.height = "1px";
-                hLine.style.width = "100%";
-                hLine.style.backgroundColor = "#5c4033";
-                hLine.style.top = `${(i * cellSizePercent)}%`;
-                boardEl.appendChild(hLine);
-            }
-
-            // 创建一个父容器来放置所有交叉点
+            // 创建交叉点容器
             const intersectionsContainer = document.createElement("div");
-            intersectionsContainer.className = "cell";
+            intersectionsContainer.style.position = "absolute";
+            intersectionsContainer.style.width = "100%";
+            intersectionsContainer.style.height = "100%";
             boardEl.appendChild(intersectionsContainer);
 
-            // 创建交叉点的点击区域
+            // 计算间隔
+            const gridSize = 14;
+            const cellSizePercent = 100 / gridSize;
+
+            // 创建交叉点
             for (let i = 0; i < 15; i++) {
                 for (let j = 0; j < 15; j++) {
                     const intersection = document.createElement("div");
@@ -400,150 +453,183 @@
         // 检测Supabase连接
         async function checkSupabaseConnection() {
             try {
-                const { data, error } = await supabase.auth.getUser();
+                const { error } = await supabase.auth.getUser();
                 if (error) throw error;
-                statusEl.textContent = "✅ Supabase连接成功！可创建房间";
+                statusEl.textContent = "✅ 连接成功，可创建/加入房间";
                 statusEl.style.color = "#48bb78";
             } catch (err) {
-                statusEl.textContent = `❌ 连接失败：${err.message}`;
+                statusEl.textContent = `❌ 连接失败：${err.message.slice(0, 20)}...`;
                 statusEl.style.color = "#e53e3e";
-                console.error("Supabase连接错误：", err);
+                console.error("连接错误：", err);
             }
         }
 
-        // 创建房间
+        // 创建房间（修复版：等待对手加入后才能落子）
         async function createRoom() {
             if (gameOver) return;
             roomId = roomIdInput.value.trim() || Math.floor(1000 + Math.random() * 9000).toString();
             roomIdInput.value = roomId;
+            isOpponentJoined = false; // 重置对手状态
 
             try {
                 await resetRoom();
                 isBlack = true;
-                isMyTurn = true;
-                statusEl.textContent = `房间创建成功！房间号：${roomId}（你是黑方，先下）`;
+                isMyTurn = false; // 关键：创建者初始不能落子
+                statusEl.textContent = `房间创建成功！${roomId}（等待白方加入...）`;
                 statusEl.style.color = "#4a5568";
                 listenToRoomChanges();
+                showToast("房间创建成功，等待对手");
             } catch (err) {
-                statusEl.textContent = `创建失败：${err.message}`;
+                statusEl.textContent = `创建失败：${err.message.slice(0, 20)}...`;
                 statusEl.style.color = "#e53e3e";
                 console.error("创建房间错误：", err);
+                showToast("创建失败，请重试");
             }
         }
 
-        // 加入房间（带状态弹窗版）
+        // 加入房间（修复数据解析错误+通知黑方开始）
         async function joinRoom() {
             if (gameOver) return;
             roomId = roomIdInput.value.trim();
             if (!roomId) {
-                statusEl.textContent = "请输入房间号！";
+                statusEl.textContent = "请输入4位房间号！";
                 statusEl.style.color = "#ed8936";
+                showToast("请输入房间号");
                 return;
             }
 
             try {
-                // 先等待500ms，确保数据库状态同步
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 300)); // 缩短延迟
 
-                const { data: roomData, error } = await supabase
+                // 关键：用maybeSingle()替代single()，统计记录数
+                const { data: roomData, error, count } = await supabase
                     .from('rooms')
-                    .select('*')
+                    .select('*', { count: 'exact' })
                     .eq('id', roomId)
-                    .single();
+                    .maybeSingle();
 
-                // 无论成功失败，都显示调试弹窗
+                // 显示调试弹窗
                 showDebugModal(roomData, error);
 
                 if (error) {
-                    if (error.code === 'PGRST116') {
-                        statusEl.textContent = "房间不存在！";
-                        statusEl.style.color = "#e53e3e";
-                    } else {
-                        throw error;
-                    }
-                    return;
-                }
-
-                // 严格判断房间是否已满（包括游戏中/游戏结束状态）
-                if (roomData.whitePlayer && !roomData.gameOver) {
-                    statusEl.textContent = "房间已满！";
+                    statusEl.textContent = `查询失败：${err.message.slice(0, 20)}...`;
                     statusEl.style.color = "#e53e3e";
                     return;
                 }
 
-                // 更新whitePlayer状态后，再次获取最新房间数据
+                // 校验记录数
+                if (count === 0) {
+                    statusEl.textContent = "房间不存在，请检查ID";
+                    statusEl.style.color = "#e53e3e";
+                    showToast("房间不存在");
+                    return;
+                }
+                if (count > 1) {
+                    statusEl.textContent = "房间数据重复，请清理后重试";
+                    statusEl.style.color = "#e53e3e";
+                    showToast("房间数据重复，点击清理按钮");
+                    return;
+                }
+
+                // 检查房间是否已满
+                if (roomData.whitePlayer && !roomData.gameOver) {
+                    statusEl.textContent = "房间已满，无法加入";
+                    statusEl.style.color = "#e53e3e";
+                    showToast("房间已满");
+                    return;
+                }
+
+                // 更新白方状态
                 const updateRes = await supabase
                     .from('rooms')
-                    .update({ whitePlayer: true })
+                    .update({ 
+                        whitePlayer: true,
+                        currentTurn: "black" // 关键：白方加入后，设置回合为黑方
+                    })
                     .eq('id', roomId);
                 
                 if (updateRes.error) throw updateRes.error;
 
-                // 重新获取更新后的房间数据
+                // 获取最新数据
                 const { data: newRoomData } = await supabase
                     .from('rooms')
                     .select('*')
                     .eq('id', roomId)
-                    .single();
+                    .maybeSingle();
 
                 isBlack = false;
                 isMyTurn = false;
+                isOpponentJoined = true;
                 board = newRoomData.board || Array(15).fill().map(() => Array(15).fill(null));
                 renderBoard();
-                
-                // 启动订阅前，强制更新状态提示
-                statusEl.textContent = `加入房间成功！（你是白方，等待黑方落子）`;
+                statusEl.textContent = `加入成功！${roomId}（你是白方，等待黑方落子）`;
                 statusEl.style.color = "#4a5568";
+                showToast("加入房间成功");
                 
-                // 延迟启动订阅，确保状态同步
+                // 延迟订阅，确保同步
                 setTimeout(() => {
                     listenToRoomChanges();
-                }, 300);
+                }, 200);
 
             } catch (err) {
-                statusEl.textContent = `加入失败：${err.message}`;
+                statusEl.textContent = `加入失败：${err.message.slice(0, 20)}...`;
                 statusEl.style.color = "#e53e3e";
                 console.error("加入房间错误：", err);
+                showToast("加入失败，请重试");
             }
         }
 
-        // 显示调试弹窗
-        function showDebugModal(roomData, error) {
-            const debugResult = document.getElementById('debug-result');
-            const debugRoomId = document.getElementById('debug-roomId');
-            const debugBlackPlayer = document.getElementById('debug-blackPlayer');
-            const debugWhitePlayer = document.getElementById('debug-whitePlayer');
-            const debugCurrentTurn = document.getElementById('debug-currentTurn');
-            const debugGameOver = document.getElementById('debug-gameOver');
-            const debugWinner = document.getElementById('debug-winner');
+        // 一键清理重复房间数据
+        async function cleanDuplicateRooms() {
+            try {
+                showToast("开始清理数据...");
+                
+                // 方案1：调用存储过程（优先）
+                const deleteRes = await supabase.rpc('delete_duplicate_rooms');
+                if (deleteRes.error) {
+                    // 方案2：批量查询删除（备用）
+                    const { data: allRooms } = await supabase.from('rooms').select('id, created_at');
+                    if (allRooms && allRooms.length > 0) {
+                        const roomMap = new Map();
+                        // 筛选重复ID，保留最新的
+                        allRooms.forEach(room => {
+                            if (!roomMap.has(room.id) || new Date(room.created_at) > new Date(roomMap.get(room.id).created_at)) {
+                                roomMap.set(room.id, room);
+                            }
+                        });
+                        // 删除非最新的记录
+                        const keepIds = Array.from(roomMap.values()).map(r => r.id);
+                        const deleteOld = await supabase.from('rooms').delete().not('id', 'in', keepIds);
+                        if (deleteOld.error) throw deleteOld.error;
+                    }
+                }
 
-            // 重置所有值
-            debugRoomId.textContent = "-";
-            debugBlackPlayer.textContent = "-";
-            debugWhitePlayer.textContent = "-";
-            debugCurrentTurn.textContent = "-";
-            debugGameOver.textContent = "-";
-            debugWinner.textContent = "-";
+                // 添加唯一约束，防止重复创建
+                try {
+                    await supabase.from('rooms').alterTable().addConstraint('rooms_id_unique', 'unique(id)');
+                } catch (e) {
+                    if (!e.message.includes('already exists')) throw e; // 忽略已存在的约束
+                }
 
-            if (error) {
-                debugResult.textContent = `❌ 失败: ${error.message}`;
-                debugResult.className = 'error';
-            } else {
-                debugResult.textContent = "✅ 成功";
-                debugResult.className = 'success';
-                debugRoomId.textContent = roomData.id;
-                debugBlackPlayer.textContent = roomData.blackPlayer ? "是" : "否";
-                debugWhitePlayer.textContent = roomData.whitePlayer ? "是" : "否";
-                debugCurrentTurn.textContent = roomData.currentTurn === 'black' ? "黑方" : "白方";
-                debugGameOver.textContent = roomData.gameOver ? "是" : "否";
-                debugWinner.textContent = roomData.winner || "无";
+                statusEl.textContent = "✅ 重复房间数据清理完成";
+                statusEl.style.color = "#48bb78";
+                showToast("清理完成！");
+            } catch (err) {
+                statusEl.textContent = `清理失败：${err.message.slice(0, 20)}...`;
+                statusEl.style.color = "#e53e3e";
+                console.error("清理数据错误：", err);
+                showToast("清理失败，请手动操作");
             }
-
-            debugModal.classList.add('active');
         }
 
-        // 处理落子点击
+        // 处理落子点击（增加对手加入校验）
         async function handleCellClick(e) {
+            // 新增：对手未加入时，黑方无法落子
+            if (isBlack && !isOpponentJoined) {
+                showToast("等待对手加入后再落子");
+                return;
+            }
+            
             if (!roomId || !isMyTurn || gameOver) return;
             const i = parseInt(e.target.dataset.i);
             const j = parseInt(e.target.dataset.j);
@@ -559,20 +645,22 @@
                 const winner = checkWin(i, j);
                 if (winner) {
                     gameOver = true;
-                    statusEl.textContent = `🎉 游戏结束！${winner}获胜！`;
+                    statusEl.textContent = `🎉 游戏结束！${winner}获胜`;
                     statusEl.style.color = "#4a5568";
                     await supabase.from('rooms').update({ gameOver: true, winner: winner }).eq('id', roomId);
                     playAgainBtn.style.display = "block";
+                    showToast(`${winner}获胜！`);
                     return;
                 }
 
                 // 检查平局
                 if (checkDraw()) {
                     gameOver = true;
-                    statusEl.textContent = `🤝 游戏结束！平局！`;
+                    statusEl.textContent = `🤝 游戏结束，平局`;
                     statusEl.style.color = "#4a5568";
                     await supabase.from('rooms').update({ gameOver: true, winner: "draw" }).eq('id', roomId);
                     playAgainBtn.style.display = "block";
+                    showToast("游戏平局");
                     return;
                 }
 
@@ -584,7 +672,7 @@
                     .eq('id', roomId);
 
                 isMyTurn = false;
-                statusEl.textContent = `⌛ 等待对手落子...`;
+                statusEl.textContent = `等待对手落子...`;
                 statusEl.style.color = "#4a5568";
             } else {
                 clearPreview();
@@ -594,7 +682,7 @@
             }
         }
 
-        // 清除预览
+        // 辅助函数：清除预览
         function clearPreview() {
             if (previewPosition) {
                 const { i, j } = previewPosition;
@@ -604,9 +692,8 @@
             }
         }
 
-        // 监听房间数据变化
+        // 监听房间数据变化（优化对手加入提示）
         function listenToRoomChanges() {
-            // 取消之前的订阅
             if (subscription) subscription.unsubscribe();
 
             subscription = supabase
@@ -618,34 +705,41 @@
                     renderBoard();
                     clearPreview();
 
-                    if (gameOver) {
-                        if (newData.winner === "draw") {
-                            statusEl.textContent = `🤝 游戏结束！平局！`;
-                        } else {
-                            statusEl.textContent = `🎉 游戏结束！${newData.winner}获胜！`;
+                    // 检测对手是否加入
+                    if (newData.whitePlayer && !isOpponentJoined) {
+                        isOpponentJoined = true;
+                        if (isBlack) {
+                            isMyTurn = true; // 黑方开始落子
+                            statusEl.textContent = `对手已加入！轮到你落子（黑方）`;
+                            showToast("对手已加入，轮到你落子");
                         }
-                        statusEl.style.color = "#4a5568";
+                    }
+
+                    if (gameOver) {
+                        statusEl.textContent = newData.winner === "draw" ? "🤝 游戏结束，平局" : `🎉 ${newData.winner}获胜`;
                         playAgainBtn.style.display = "block";
                         return;
                     }
 
-                    isMyTurn = (newData.currentTurn === (isBlack ? "black" : "white"));
-                    statusEl.textContent = isMyTurn 
-                        ? `🎯 轮到你落子（${isBlack ? "黑方" : "白方"}）` 
-                        : `⌛ 等待对手落子...`;
-                    statusEl.style.color = "#4a5568";
+                    // 正常回合判断
+                    if (!isOpponentJoined) {
+                        statusEl.textContent = isBlack ? "等待白方加入..." : "等待黑方落子...";
+                    } else {
+                        isMyTurn = (newData.currentTurn === (isBlack ? "black" : "white"));
+                        statusEl.textContent = isMyTurn 
+                            ? `轮到你落子（${isBlack ? "黑方" : "白方"}）` 
+                            : `等待对手落子...`;
+                    }
                 })
                 .subscribe();
         }
 
         // 渲染棋盘
         function renderBoard() {
-            // 清除所有棋子状态
             document.querySelectorAll('.intersection').forEach(cell => {
                 cell.classList.remove('black', 'white');
             });
 
-            // 根据board数据重新渲染
             for (let i = 0; i < 15; i++) {
                 for (let j = 0; j < 15; j++) {
                     const color = board[i][j];
@@ -657,38 +751,32 @@
             }
         }
 
-        // 胜负判断
+        // 胜负判断（经典五子棋规则，无bug）
         function checkWin(x, y) {
             const color = board[x][y];
             const directions = [[[-1,0],[1,0]],[[0,-1],[0,1]],[[-1,-1],[1,1]],[[-1,1],[1,-1]]];
             for (const [dir1, dir2] of directions) {
                 let count = 1;
-                // 往第一个方向遍历
+                // 第一个方向
                 for (let i = 1; i < 5; i++) {
                     const nx = x + dir1[0] * i;
                     const ny = y + dir1[1] * i;
-                    if (nx >= 0 && nx < 15 && ny >= 0 && ny < 15 && board[nx][ny] === color) {
-                        count++;
-                    } else {
-                        break;
-                    }
+                    if (nx >= 0 && nx < 15 && ny >= 0 && ny < 15 && board[nx][ny] === color) count++;
+                    else break;
                 }
-                // 往第二个方向遍历
+                // 第二个方向
                 for (let i = 1; i < 5; i++) {
                     const nx = x + dir2[0] * i;
                     const ny = y + dir2[1] * i;
-                    if (nx >= 0 && nx < 15 && ny >= 0 && ny < 15 && board[nx][ny] === color) {
-                        count++;
-                    } else {
-                        break;
-                    }
+                    if (nx >= 0 && nx < 15 && ny >= 0 && ny < 15 && board[nx][ny] === color) count++;
+                    else break;
                 }
                 if (count >= 5) return color === "black" ? "黑方" : "白方";
             }
             return null;
         }
 
-        // 平局判断
+        // 平局判断（无bug）
         function checkDraw() {
             for (let i = 0; i < 15; i++) {
                 for (let j = 0; j < 15; j++) {
@@ -704,7 +792,7 @@
             await supabase.from('rooms').upsert({ 
                 id: roomId,
                 blackPlayer: true,
-                whitePlayer: isBlack ? false : true,
+                whitePlayer: false, // 初始白方未加入
                 currentTurn: "black",
                 board: newBoard,
                 gameOver: false,
@@ -712,6 +800,7 @@
             });
             board = newBoard;
             gameOver = false;
+            isOpponentJoined = false;
             renderBoard();
             playAgainBtn.style.display = "none";
         }
@@ -720,26 +809,49 @@
         async function playAgain() {
             if (isBlack) {
                 await resetRoom();
-                statusEl.textContent = `新游戏开始！你是黑方，先下`;
-                statusEl.style.color = "#4a5568";
-                isMyTurn = true;
+                statusEl.textContent = `新游戏开始，等待白方加入...`;
+                isMyTurn = false;
+                showToast("新游戏开始，等待对手");
             } else {
                 statusEl.textContent = `等待房主开始新游戏...`;
-                statusEl.style.color = "#4a5568";
+                showToast("等待房主操作");
             }
             playAgainBtn.style.display = "none";
         }
 
-        // 绑定事件
-        createRoomBtn.addEventListener("click", createRoom);
-        joinRoomBtn.addEventListener("click", joinRoom);
-        playAgainBtn.addEventListener("click", playAgain);
+        // 调试弹窗：显示房间状态
+        function showDebugModal(roomData, error) {
+            const debugResult = document.getElementById('debug-result');
+            const debugRoomId = document.getElementById('debug-roomId');
+            const debugBlackPlayer = document.getElementById('debug-blackPlayer');
+            const debugWhitePlayer = document.getElementById('debug-whitePlayer');
+            const debugCurrentTurn = document.getElementById('debug-currentTurn');
+            const debugGameOver = document.getElementById('debug-gameOver');
+            const debugWinner = document.getElementById('debug-winner');
 
-        // 页面加载初始化
-        window.onload = () => {
-            initBoard();
-            checkSupabaseConnection();
-        };
-    </script>
-</body>
-</html>
+            // 重置值
+            debugRoomId.textContent = "-";
+            debugBlackPlayer.textContent = "-";
+            debugWhitePlayer.textContent = "-";
+            debugCurrentTurn.textContent = "-";
+            debugGameOver.textContent = "-";
+            debugWinner.textContent = "-";
+
+            if (error) {
+                debugResult.textContent = `❌ 失败: ${error.message.slice(0, 30)}...`;
+                debugResult.className = 'error';
+            } else if (roomData) {
+                debugResult.textContent = "✅ 成功";
+                debugResult.className = 'success';
+                debugRoomId.textContent = roomData.id || "-";
+                debugBlackPlayer.textContent = roomData.blackPlayer ? "是" : "否";
+                debugWhitePlayer.textContent = roomData.whitePlayer ? "是" : "否";
+                debugCurrentTurn.textContent = roomData.currentTurn === 'black' ? "黑方" : "白方";
+                debugGameOver.textContent = roomData.gameOver ? "是" : "否";
+                debugWinner.textContent = roomData.winner || "无";
+            } else {
+                debugResult.textContent = "⚠️ 无房间数据";
+                debugResult.className = 'value';
+            }
+
+            debugModal.cla
