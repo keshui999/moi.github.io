@@ -6,7 +6,7 @@
     <meta name="referrer" content="no-referrer">
     <title>sleepy五子棋</title>
     <style>
-        /* 全局样式重置与基础设置 */
+        /* 全局样式重置 */
         * {
             margin: 0;
             padding: 0;
@@ -17,121 +17,161 @@
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
             color: #2d3748;
-            -webkit-tap-highlight-color: transparent; /* 去除微信点击高亮 */
+            -webkit-tap-highlight-color: transparent;
+            padding: 15px;
         }
 
-        /* 主容器 */
-        .container {
-            background-color: #ffffff;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        /* 页面容器：默认隐藏棋盘页，显示创建页 */
+        .page {
+            display: none;
             width: 100%;
             max-width: 400px;
+            margin: 0 auto;
+            padding-top: 20px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* 创建房间页样式 */
+        .create-page {
+            text-align: center;
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px 25px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .create-page h1 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: #2d3748;
+        }
+
+        .status-bar {
+            font-size: 16px;
+            height: 24px;
+            line-height: 24px;
+            margin-bottom: 25px;
+            color: #4a5568;
+        }
+
+        .room-form {
+            margin-bottom: 30px;
+        }
+
+        .room-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            outline: none;
+            font-size: 16px;
+            margin-bottom: 15px;
             text-align: center;
         }
 
-        /* 标题 */
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 20px;
-            letter-spacing: 0.5px;
-        }
-
-        /* 功能按钮区 */
-        .room-area {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        #roomId {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            outline: none;
-            font-size: 15px;
-            transition: border-color 0.2s ease;
-        }
-
-        #roomId:focus {
+        .room-input:focus {
             border-color: #4299e1;
             box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.1);
         }
 
         .btn {
-            padding: 12px 15px;
-            background-color: #4299e1;
-            color: white;
+            display: block;
+            width: 100%;
+            padding: 14px;
             border: none;
-            border-radius: 10px;
-            cursor: pointer;
+            border-radius: 12px;
+            font-size: 16px;
             font-weight: 500;
-            font-size: 15px;
+            cursor: pointer;
             transition: all 0.2s ease;
-            flex: 1;
+            color: #fff;
         }
 
-        .btn:hover {
+        .create-btn {
+            background-color: #4299e1;
+            margin-bottom: 10px;
+        }
+
+        .create-btn:hover {
             background-color: #3182ce;
         }
 
-        .btn:active {
-            transform: scale(0.98);
+        .join-btn {
+            background-color: #48bb78;
         }
 
-        /* 清理数据按钮 */
+        .join-btn:hover {
+            background-color: #38a169;
+        }
+
         .clean-btn {
             background-color: #9f7aea;
-            margin-bottom: 15px;
-            width: 100%;
-            flex: none;
-            padding: 10px;
             font-size: 14px;
+            padding: 10px;
+            margin-top: 15px;
         }
 
         .clean-btn:hover {
             background-color: #805ad5;
         }
 
-        /* 状态提示 */
-        #status {
-            font-size: 16px;
-            font-weight: 500;
-            color: #4a5568;
-            margin-bottom: 15px;
-            height: 22px; /* 固定高度，防止布局跳动 */
-            line-height: 22px;
+        .btn:active {
+            transform: scale(0.98);
         }
 
-        /* 棋盘样式 - 优化版（轻量化） */
-        .board {
+        /* 棋盘对战页样式 */
+        .board-page {
+            text-align: center;
+        }
+
+        .board-header {
+            background: #fff;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .room-info {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+
+        .game-status {
+            font-size: 15px;
+            color: #4a5568;
+            height: 20px;
+            line-height: 20px;
+        }
+
+        /* 修复棋盘线条问题：重新调整背景图样式 */
+        .chess-board {
             position: relative;
             background-color: #e9d8a6;
-            border: 3px solid #b98f5e; /* 木质边框 */
+            border: 3px solid #b98f5e;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             aspect-ratio: 1/1;
             width: 100%;
+            /* 修复横竖线显示：调整background-size和background-position */
             background-image: 
-                linear-gradient(#5c4033 1px, transparent 1px),
-                linear-gradient(90deg, #5c4033 1px, transparent 1px); /* 棋盘格背景图替代JS生成线条 */
-            background-size: calc(100% / 14), calc(100% / 14); /* 15个点14个间隔 */
+                linear-gradient(to right, #5c4033 1px, transparent 1px),
+                linear-gradient(to bottom, #5c4033 1px, transparent 1px);
+            background-size: calc(100% / 14), calc(100% / 14);
             background-position: 0 0;
+            background-repeat: repeat;
         }
 
-        /* 天元和星位标记（轻量化） */
-        .board::before, .board::after,
-        .board .star-1, .board .star-2, .board .star-3, .board .star-4 {
+        /* 天元和星位 */
+        .chess-board::before, .chess-board::after,
+        .chess-board .star-1, .chess-board .star-2, .chess-board .star-3 {
             content: '';
             position: absolute;
             width: 6px;
@@ -141,24 +181,22 @@
             z-index: 5;
         }
 
-        /* 天元 */
-        .board::before {
+        .chess-board::before {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
         }
 
-        /* 星位 */
-        .board::after {
+        .chess-board::after {
             top: calc(100% * 4 / 14);
             left: calc(100% * 4 / 14);
         }
-        .board .star-1 { top: calc(100% * 4 / 14); left: calc(100% * 10 / 14); }
-        .board .star-2 { top: calc(100% * 10 / 14); left: calc(100% * 4 / 14); }
-        .board .star-3 { top: calc(100% * 10 / 14); left: calc(100% * 10 / 14); }
-        .board .star-4 { display: none; } /* 简化星位，减少元素 */
 
-        /* 交叉点点击区域 */
+        .chess-board .star-1 { top: calc(100% * 4 / 14); left: calc(100% * 10 / 14); }
+        .chess-board .star-2 { top: calc(100% * 10 / 14); left: calc(100% * 4 / 14); }
+        .chess-board .star-3 { top: calc(100% * 10 / 14); left: calc(100% * 10 / 14); }
+
+        /* 交叉点 */
         .intersection {
             position: absolute;
             width: 22px;
@@ -169,13 +207,14 @@
             cursor: pointer;
         }
 
-        /* 悬停高亮 */
         .intersection:hover:not(.black):not(.white) {
             background-color: rgba(92, 64, 51, 0.15);
         }
 
-        /* 落子预览 */
-        .intersection.preview::after {
+        /* 棋子和预览 */
+        .intersection.preview::after,
+        .intersection.black::after,
+        .intersection.white::after {
             content: "";
             position: absolute;
             top: 50%;
@@ -184,6 +223,10 @@
             width: 80%;
             height: 80%;
             border-radius: 50%;
+            animation: placeStone 0.2s ease-out;
+        }
+
+        .intersection.preview::after {
             opacity: 0.4;
         }
 
@@ -195,33 +238,14 @@
             background: radial-gradient(circle at 30% 30%, #fff, #d0d0d0);
         }
 
-        /* 棋子样式（优化质感） */
         .intersection.black::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            height: 80%;
             background: radial-gradient(circle at 35% 35%, #555, #000);
-            border-radius: 50%;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 -1px 2px rgba(255,255,255,0.1);
-            animation: placeStone 0.2s ease-out;
         }
 
         .intersection.white::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            height: 80%;
             background: radial-gradient(circle at 35% 35%, #fff, #d0d0d0);
-            border-radius: 50%;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 -1px 2px rgba(0,0,0,0.05);
-            animation: placeStone 0.2s ease-out;
         }
 
         @keyframes placeStone {
@@ -230,35 +254,43 @@
             100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
 
-        /* 再来一局按钮 */
-        #playAgainBtn {
-            margin-top: 10px;
-            padding: 10px 20px;
-            background-color: #48bb78;
+        .play-again-btn {
+            background-color: #4299e1;
             display: none;
-            flex: none;
-            width: 100%;
+            margin: 0 auto;
+            width: 80%;
         }
 
-        #playAgainBtn:hover {
-            background-color: #38a169;
+        /* 提示弹窗 */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 1001;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
         }
 
-        /* 页脚 */
-        .footer {
-            font-size: 13px;
-            color: #718096;
-            margin-top: 15px;
+        .toast.active {
+            opacity: 1;
+            pointer-events: all;
         }
 
-        /* 调试弹窗样式 */
+        /* 调试弹窗 */
         .debug-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.5);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -274,115 +306,77 @@
         }
 
         .debug-content {
-            background-color: white;
+            background: #fff;
             padding: 20px;
             border-radius: 12px;
             max-width: 85%;
-            max-height: 70%;
-            overflow-y: auto;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
             text-align: left;
         }
 
         .debug-content h3 {
-            margin-top: 0;
-            color: #2d3748;
             font-size: 18px;
-            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 10px;
             padding-bottom: 8px;
-            margin-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         .debug-content p {
-            margin: 6px 0;
             font-size: 14px;
-            color: #4a5568;
-            line-height: 1.5;
+            margin: 6px 0;
         }
 
         .debug-content .label {
             font-weight: 600;
-            color: #2d3748;
         }
 
         .debug-content .success { color: #48bb78; }
         .debug-content .error { color: #e53e3e; }
-
-        .debug-content .btn {
-            margin-top: 15px;
-            width: 100%;
-            padding: 10px;
-        }
-
-        /* 提示弹窗 */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0,0,0,0.7);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 6px;
-            font-size: 14px;
-            z-index: 1001;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-        }
-
-        .toast.active {
-            opacity: 1;
-            pointer-events: all;
-        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- 创建房间页 -->
+    <div class="page create-page active" id="createPage">
         <h1>sleepy五子棋</h1>
-        
-        <!-- 清理数据按钮 -->
-        <button class="btn clean-btn" id="cleanDataBtn">一键清理重复房间</button>
-        
-        <div class="room-area">
-            <input type="text" id="roomId" placeholder="输入4位房间号">
-            <button class="btn" id="createRoom">创建</button>
-            <button class="btn" id="joinRoom">加入</button>
+        <div class="status-bar" id="createStatus">正在检测连接...</div>
+        <div class="room-form">
+            <input type="text" class="room-input" id="roomIdInput" placeholder="输入4位房间号（创建可留空）">
+            <button class="btn create-btn" id="createRoomBtn">创建房间</button>
+            <button class="btn join-btn" id="joinRoomBtn">加入房间</button>
+            <button class="btn clean-btn" id="cleanDataBtn">一键清理重复房间</button>
         </div>
-        
-        <div id="status">正在检测连接...</div>
-        
-        <div class="board" id="board">
+    </div>
+
+    <!-- 棋盘对战页 -->
+    <div class="page board-page" id="boardPage">
+        <div class="board-header">
+            <div class="room-info" id="roomInfo">房间号：xxxx</div>
+            <div class="game-status" id="gameStatus">等待对手加入...</div>
+        </div>
+        <div class="chess-board" id="chessBoard">
             <div class="star-1"></div>
             <div class="star-2"></div>
             <div class="star-3"></div>
-            <div class="star-4"></div>
         </div>
-        
-        <button class="btn" id="playAgainBtn">再来一局</button>
-        
-        <div class="footer">sleepy出品 © 2025</div>
+        <button class="btn play-again-btn" id="playAgainBtn">再来一局</button>
     </div>
+
+    <!-- 提示弹窗 -->
+    <div class="toast" id="toast">提示</div>
 
     <!-- 调试弹窗 -->
     <div class="debug-modal" id="debugModal">
         <div class="debug-content">
             <h3>房间状态详情</h3>
-            <p><span class="label">操作结果:</span> <span id="debug-result" class="value">未知</span></p>
-            <p><span class="label">房间ID:</span> <span id="debug-roomId" class="value">-</span></p>
-            <p><span class="label">黑方已加入:</span> <span id="debug-blackPlayer" class="value">-</span></p>
-            <p><span class="label">白方已加入:</span> <span id="debug-whitePlayer" class="value">-</span></p>
-            <p><span class="label">当前回合:</span> <span id="debug-currentTurn" class="value">-</span></p>
-            <p><span class="label">游戏是否结束:</span> <span id="debug-gameOver" class="value">-</span></p>
-            <p><span class="label">获胜者:</span> <span id="debug-winner" class="value">-</span></p>
-            <button class="btn" onclick="closeModal()">关闭</button>
+            <p><span class="label">操作结果:</span> <span id="debugResult">未知</span></p>
+            <p><span class="label">房间ID:</span> <span id="debugRoomId">-</span></p>
+            <p><span class="label">黑方已加入:</span> <span id="debugBlack">-</span></p>
+            <p><span class="label">白方已加入:</span> <span id="debugWhite">-</span></p>
+            <p><span class="label">当前回合:</span> <span id="debugTurn">-</span></p>
+            <button class="btn" onclick="closeDebugModal()">关闭</button>
         </div>
     </div>
 
-    <!-- 提示弹窗 -->
-    <div class="toast" id="toast">操作提示</div>
-
-    <!-- 引入Supabase SDK（轻量化CDN） -->
+    <!-- 引入Supabase SDK（指定版本，避免加载问题） -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4/dist/umd/supabase.min.js"></script>
     <script>
         // Supabase配置
@@ -391,164 +385,151 @@
             anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y3h2bGloZnp3eGt3emV3cXBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2MzYyNzgsImV4cCI6MjA4MTIxMjI3OH0.FZyhUAijmPtx7hF7lCopZCx95XYK3qfSWSmKUEgX_7k"
         };
 
-        // 初始化Supabase
-        const supabase = window.supabase.createClient(
-            supabaseConfig.url,
-            supabaseConfig.anonKey
-        );
-
-        // DOM元素
-        const roomIdInput = document.getElementById("roomId");
-        const statusEl = document.getElementById("status");
-        const boardEl = document.getElementById("board");
-        const createRoomBtn = document.getElementById("createRoom");
-        const joinRoomBtn = document.getElementById("joinRoom");
-        const playAgainBtn = document.getElementById("playAgainBtn");
-        const cleanDataBtn = document.getElementById("cleanDataBtn");
-        const debugModal = document.getElementById("debugModal");
-        const toast = document.getElementById("toast");
-
         // 全局变量
+        let supabase;
         let roomId = "";
         let isBlack = true;
         let isMyTurn = false;
+        let isOpponentJoined = false;
+        let gameOver = false;
         let board = Array(15).fill().map(() => Array(15).fill(null));
         let previewPosition = null;
-        let gameOver = false;
         let subscription = null;
-        let isOpponentJoined = false; // 新增：标记对手是否已加入
 
-        // 初始化棋盘（轻量化）
-        function initBoard() {
-            // 清空棋盘原有交叉点
-            const oldContainer = boardEl.querySelector('div[style*="position: absolute; width: 100%"]');
-            if (oldContainer) oldContainer.remove();
+        // DOM元素
+        const createPage = document.getElementById('createPage');
+        const boardPage = document.getElementById('boardPage');
+        const createStatus = document.getElementById('createStatus');
+        const roomIdInput = document.getElementById('roomIdInput');
+        const createRoomBtn = document.getElementById('createRoomBtn');
+        const joinRoomBtn = document.getElementById('joinRoomBtn');
+        const cleanDataBtn = document.getElementById('cleanDataBtn');
+        const roomInfo = document.getElementById('roomInfo');
+        const gameStatus = document.getElementById('gameStatus');
+        const chessBoard = document.getElementById('chessBoard');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const toast = document.getElementById('toast');
+        const debugModal = document.getElementById('debugModal');
+        const debugResult = document.getElementById('debugResult');
+        const debugRoomId = document.getElementById('debugRoomId');
+        const debugBlack = document.getElementById('debugBlack');
+        const debugWhite = document.getElementById('debugWhite');
+        const debugTurn = document.getElementById('debugTurn');
 
-            // 创建交叉点容器
-            const intersectionsContainer = document.createElement("div");
-            intersectionsContainer.style.position = "absolute";
-            intersectionsContainer.style.width = "100%";
-            intersectionsContainer.style.height = "100%";
-            boardEl.appendChild(intersectionsContainer);
-
-            // 计算间隔
-            const gridSize = 14;
-            const cellSizePercent = 100 / gridSize;
-
-            // 创建交叉点
-            for (let i = 0; i < 15; i++) {
-                for (let j = 0; j < 15; j++) {
-                    const intersection = document.createElement("div");
-                    intersection.className = "intersection";
-                    intersection.dataset.i = i;
-                    intersection.dataset.j = j;
-                    intersection.style.left = `${(i * cellSizePercent)}%`;
-                    intersection.style.top = `${(j * cellSizePercent)}%`;
-                    intersection.addEventListener("click", handleCellClick);
-                    intersectionsContainer.appendChild(intersection);
-                }
-            }
-        }
-
-        // 检测Supabase连接
-        async function checkSupabaseConnection() {
+        // 初始化Supabase（增加超时处理，解决连接卡顿）
+        async function initSupabase() {
             try {
-                const { error } = await supabase.auth.getUser();
+                // 设置超时
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('连接超时')), 5000);
+                });
+
+                // 初始化并检测连接
+                supabase = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                const connectPromise = supabase.auth.getUser();
+                const { error } = await Promise.race([connectPromise, timeoutPromise]);
+
                 if (error) throw error;
-                statusEl.textContent = "✅ 连接成功，可创建/加入房间";
-                statusEl.style.color = "#48bb78";
+                createStatus.textContent = "✅ 连接成功，可创建/加入房间";
+                createStatus.style.color = "#48bb78";
             } catch (err) {
-                statusEl.textContent = `❌ 连接失败：${err.message.slice(0, 20)}...`;
-                statusEl.style.color = "#e53e3e";
-                console.error("连接错误：", err);
+                createStatus.textContent = `❌ 连接失败：${err.message}`;
+                createStatus.style.color = "#e53e3e";
+                showToast(`连接失败：${err.message}`);
+                console.error('Supabase初始化失败：', err);
             }
         }
 
-        // 创建房间（修复版：等待对手加入后才能落子）
+        // 创建房间
         async function createRoom() {
-            if (gameOver) return;
-            roomId = roomIdInput.value.trim() || Math.floor(1000 + Math.random() * 9000).toString();
-            roomIdInput.value = roomId;
-            isOpponentJoined = false; // 重置对手状态
-
-            try {
-                await resetRoom();
-                isBlack = true;
-                isMyTurn = false; // 关键：创建者初始不能落子
-                statusEl.textContent = `房间创建成功！${roomId}（等待白方加入...）`;
-                statusEl.style.color = "#4a5568";
-                listenToRoomChanges();
-                showToast("房间创建成功，等待对手");
-            } catch (err) {
-                statusEl.textContent = `创建失败：${err.message.slice(0, 20)}...`;
-                statusEl.style.color = "#e53e3e";
-                console.error("创建房间错误：", err);
-                showToast("创建失败，请重试");
+            if (!supabase) {
+                showToast("请先等待连接成功");
+                return;
             }
-        }
 
-        // 加入房间（修复数据解析错误+通知黑方开始）
-        async function joinRoom() {
-            if (gameOver) return;
-            roomId = roomIdInput.value.trim();
-            if (!roomId) {
-                statusEl.textContent = "请输入4位房间号！";
-                statusEl.style.color = "#ed8936";
-                showToast("请输入房间号");
+            // 生成房间号
+            roomId = roomIdInput.value.trim() || Math.floor(1000 + Math.random() * 9000).toString();
+            if (roomId.length !== 4 || isNaN(roomId)) {
+                showToast("房间号必须是4位数字");
                 return;
             }
 
             try {
-                await new Promise(resolve => setTimeout(resolve, 300)); // 缩短延迟
+                // 重置房间数据
+                await resetRoom();
+                isBlack = true;
+                isMyTurn = false;
+                isOpponentJoined = false;
+                gameOver = false;
 
-                // 关键：用maybeSingle()替代single()，统计记录数
+                // 切换到棋盘页
+                switchToBoardPage();
+                roomInfo.textContent = `房间号：${roomId}（你是黑方）`;
+                gameStatus.textContent = "等待白方加入...";
+
+                // 监听房间变化
+                listenToRoomChanges();
+                showToast(`房间创建成功：${roomId}`);
+            } catch (err) {
+                showToast(`创建失败：${err.message.slice(0, 20)}`);
+                console.error('创建房间失败：', err);
+            }
+        }
+
+        // 加入房间
+        async function joinRoom() {
+            if (!supabase) {
+                showToast("请先等待连接成功");
+                return;
+            }
+
+            roomId = roomIdInput.value.trim();
+            if (!roomId || roomId.length !== 4 || isNaN(roomId)) {
+                showToast("请输入4位数字房间号");
+                return;
+            }
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // 查询房间（修复数据解析问题）
                 const { data: roomData, error, count } = await supabase
                     .from('rooms')
                     .select('*', { count: 'exact' })
                     .eq('id', roomId)
                     .maybeSingle();
 
-                // 显示调试弹窗
+                // 显示调试信息
                 showDebugModal(roomData, error);
 
                 if (error) {
-                    statusEl.textContent = `查询失败：${err.message.slice(0, 20)}...`;
-                    statusEl.style.color = "#e53e3e";
+                    showToast(`查询失败：${err.message.slice(0, 20)}`);
                     return;
                 }
 
-                // 校验记录数
                 if (count === 0) {
-                    statusEl.textContent = "房间不存在，请检查ID";
-                    statusEl.style.color = "#e53e3e";
                     showToast("房间不存在");
                     return;
                 }
+
                 if (count > 1) {
-                    statusEl.textContent = "房间数据重复，请清理后重试";
-                    statusEl.style.color = "#e53e3e";
-                    showToast("房间数据重复，点击清理按钮");
+                    showToast("房间数据重复，请先清理");
                     return;
                 }
 
-                // 检查房间是否已满
                 if (roomData.whitePlayer && !roomData.gameOver) {
-                    statusEl.textContent = "房间已满，无法加入";
-                    statusEl.style.color = "#e53e3e";
-                    showToast("房间已满");
+                    showToast("房间已满，无法加入");
                     return;
                 }
 
-                // 更新白方状态
-                const updateRes = await supabase
+                // 更新白方状态并设置回合
+                await supabase
                     .from('rooms')
                     .update({ 
                         whitePlayer: true,
-                        currentTurn: "black" // 关键：白方加入后，设置回合为黑方
+                        currentTurn: "black"
                     })
                     .eq('id', roomId);
-                
-                if (updateRes.error) throw updateRes.error;
 
                 // 获取最新数据
                 const { data: newRoomData } = await supabase
@@ -557,98 +538,92 @@
                     .eq('id', roomId)
                     .maybeSingle();
 
+                // 初始化游戏状态
                 isBlack = false;
                 isMyTurn = false;
                 isOpponentJoined = true;
+                gameOver = false;
                 board = newRoomData.board || Array(15).fill().map(() => Array(15).fill(null));
+
+                // 切换到棋盘页
+                switchToBoardPage();
+                roomInfo.textContent = `房间号：${roomId}（你是白方）`;
+                gameStatus.textContent = "等待黑方落子...";
+
+                // 监听房间变化
+                listenToRoomChanges();
                 renderBoard();
-                statusEl.textContent = `加入成功！${roomId}（你是白方，等待黑方落子）`;
-                statusEl.style.color = "#4a5568";
                 showToast("加入房间成功");
-                
-                // 延迟订阅，确保同步
-                setTimeout(() => {
-                    listenToRoomChanges();
-                }, 200);
-
             } catch (err) {
-                statusEl.textContent = `加入失败：${err.message.slice(0, 20)}...`;
-                statusEl.style.color = "#e53e3e";
-                console.error("加入房间错误：", err);
-                showToast("加入失败，请重试");
+                showToast(`加入失败：${err.message.slice(0, 20)}`);
+                console.error('加入房间失败：', err);
             }
         }
 
-        // 一键清理重复房间数据
-        async function cleanDuplicateRooms() {
-            try {
-                showToast("开始清理数据...");
-                
-                // 方案1：调用存储过程（优先）
-                const deleteRes = await supabase.rpc('delete_duplicate_rooms');
-                if (deleteRes.error) {
-                    // 方案2：批量查询删除（备用）
-                    const { data: allRooms } = await supabase.from('rooms').select('id, created_at');
-                    if (allRooms && allRooms.length > 0) {
-                        const roomMap = new Map();
-                        // 筛选重复ID，保留最新的
-                        allRooms.forEach(room => {
-                            if (!roomMap.has(room.id) || new Date(room.created_at) > new Date(roomMap.get(room.id).created_at)) {
-                                roomMap.set(room.id, room);
-                            }
-                        });
-                        // 删除非最新的记录
-                        const keepIds = Array.from(roomMap.values()).map(r => r.id);
-                        const deleteOld = await supabase.from('rooms').delete().not('id', 'in', keepIds);
-                        if (deleteOld.error) throw deleteOld.error;
-                    }
-                }
+        // 切换到棋盘页并初始化棋盘
+        function switchToBoardPage() {
+            createPage.classList.remove('active');
+            boardPage.classList.add('active');
+            initBoard(); // 初始化棋盘
+        }
 
-                // 添加唯一约束，防止重复创建
-                try {
-                    await supabase.from('rooms').alterTable().addConstraint('rooms_id_unique', 'unique(id)');
-                } catch (e) {
-                    if (!e.message.includes('already exists')) throw e; // 忽略已存在的约束
-                }
+        // 初始化棋盘
+        function initBoard() {
+            // 清空原有交叉点
+            const oldIntersections = chessBoard.querySelector('.intersections-container');
+            if (oldIntersections) oldIntersections.remove();
 
-                statusEl.textContent = "✅ 重复房间数据清理完成";
-                statusEl.style.color = "#48bb78";
-                showToast("清理完成！");
-            } catch (err) {
-                statusEl.textContent = `清理失败：${err.message.slice(0, 20)}...`;
-                statusEl.style.color = "#e53e3e";
-                console.error("清理数据错误：", err);
-                showToast("清理失败，请手动操作");
+            // 创建交叉点容器
+            const container = document.createElement('div');
+            container.className = 'intersections-container';
+            container.style.position = 'absolute';
+            container.style.width = '100%';
+            container.style.height = '100%';
+            chessBoard.appendChild(container);
+
+            // 计算间隔
+            const gridSize = 14;
+            const cellPercent = 100 / gridSize;
+
+            // 创建交叉点
+            for (let i = 0; i < 15; i++) {
+                for (let j = 0; j < 15; j++) {
+                    const intersection = document.createElement('div');
+                    intersection.className = 'intersection';
+                    intersection.dataset.i = i;
+                    intersection.dataset.j = j;
+                    intersection.style.left = `${i * cellPercent}%`;
+                    intersection.style.top = `${j * cellPercent}%`;
+                    intersection.addEventListener('click', handleCellClick);
+                    container.appendChild(intersection);
+                }
             }
         }
 
-        // 处理落子点击（增加对手加入校验）
+        // 处理落子
         async function handleCellClick(e) {
-            // 新增：对手未加入时，黑方无法落子
-            if (isBlack && !isOpponentJoined) {
-                showToast("等待对手加入后再落子");
+            if (!roomId || !isMyTurn || gameOver || (isBlack && !isOpponentJoined)) {
+                if (isBlack && !isOpponentJoined) showToast("等待对手加入后再落子");
                 return;
             }
-            
-            if (!roomId || !isMyTurn || gameOver) return;
+
             const i = parseInt(e.target.dataset.i);
             const j = parseInt(e.target.dataset.j);
             if (board[i][j] !== null) return;
 
-            // 预览或确认落子
+            // 确认落子（二次点击）
             if (previewPosition && previewPosition.i === i && previewPosition.j === j) {
                 clearPreview();
-                board[i][j] = isBlack ? "black" : "white";
+                board[i][j] = isBlack ? 'black' : 'white';
                 renderBoard();
 
                 // 检查胜负
                 const winner = checkWin(i, j);
                 if (winner) {
                     gameOver = true;
-                    statusEl.textContent = `🎉 游戏结束！${winner}获胜`;
-                    statusEl.style.color = "#4a5568";
-                    await supabase.from('rooms').update({ gameOver: true, winner: winner }).eq('id', roomId);
-                    playAgainBtn.style.display = "block";
+                    gameStatus.textContent = `🎉 游戏结束！${winner}获胜`;
+                    await supabase.from('rooms').update({ gameOver: true, winner }).eq('id', roomId);
+                    playAgainBtn.style.display = 'block';
                     showToast(`${winner}获胜！`);
                     return;
                 }
@@ -656,43 +631,32 @@
                 // 检查平局
                 if (checkDraw()) {
                     gameOver = true;
-                    statusEl.textContent = `🤝 游戏结束，平局`;
-                    statusEl.style.color = "#4a5568";
-                    await supabase.from('rooms').update({ gameOver: true, winner: "draw" }).eq('id', roomId);
-                    playAgainBtn.style.display = "block";
+                    gameStatus.textContent = `🤝 游戏结束，平局`;
+                    await supabase.from('rooms').update({ gameOver: true, winner: 'draw' }).eq('id', roomId);
+                    playAgainBtn.style.display = 'block';
                     showToast("游戏平局");
                     return;
                 }
 
                 // 同步到数据库
-                const nextTurn = isBlack ? "white" : "black";
+                const nextTurn = isBlack ? 'white' : 'black';
                 await supabase
                     .from('rooms')
-                    .update({ board: board, currentTurn: nextTurn })
+                    .update({ board, currentTurn: nextTurn })
                     .eq('id', roomId);
 
                 isMyTurn = false;
-                statusEl.textContent = `等待对手落子...`;
-                statusEl.style.color = "#4a5568";
+                gameStatus.textContent = "等待对手落子...";
             } else {
+                // 预览落子
                 clearPreview();
                 previewPosition = { i, j };
                 const cell = document.querySelector(`.intersection[data-i="${i}"][data-j="${j}"]`);
-                cell.classList.add("preview", isBlack ? "black" : "white");
+                cell.classList.add('preview', isBlack ? 'black' : 'white');
             }
         }
 
-        // 辅助函数：清除预览
-        function clearPreview() {
-            if (previewPosition) {
-                const { i, j } = previewPosition;
-                const cell = document.querySelector(`.intersection[data-i="${i}"][data-j="${j}"]`);
-                if (cell) cell.classList.remove("preview", "black", "white");
-                previewPosition = null;
-            }
-        }
-
-        // 监听房间数据变化（优化对手加入提示）
+        // 监听房间变化
         function listenToRoomChanges() {
             if (subscription) subscription.unsubscribe();
 
@@ -705,33 +669,44 @@
                     renderBoard();
                     clearPreview();
 
-                    // 检测对手是否加入
+                    // 检测对手加入
                     if (newData.whitePlayer && !isOpponentJoined) {
                         isOpponentJoined = true;
                         if (isBlack) {
-                            isMyTurn = true; // 黑方开始落子
-                            statusEl.textContent = `对手已加入！轮到你落子（黑方）`;
+                            isMyTurn = true;
+                            gameStatus.textContent = "对手已加入！轮到你落子（黑方）";
                             showToast("对手已加入，轮到你落子");
                         }
                     }
 
+                    // 游戏结束处理
                     if (gameOver) {
-                        statusEl.textContent = newData.winner === "draw" ? "🤝 游戏结束，平局" : `🎉 ${newData.winner}获胜`;
-                        playAgainBtn.style.display = "block";
+                        gameStatus.textContent = newData.winner === 'draw' ? '🤝 游戏结束，平局' : `🎉 ${newData.winner}获胜`;
+                        playAgainBtn.style.display = 'block';
                         return;
                     }
 
-                    // 正常回合判断
+                    // 回合判断
                     if (!isOpponentJoined) {
-                        statusEl.textContent = isBlack ? "等待白方加入..." : "等待黑方落子...";
+                        gameStatus.textContent = isBlack ? '等待白方加入...' : '等待黑方落子...';
                     } else {
-                        isMyTurn = (newData.currentTurn === (isBlack ? "black" : "white"));
-                        statusEl.textContent = isMyTurn 
-                            ? `轮到你落子（${isBlack ? "黑方" : "白方"}）` 
-                            : `等待对手落子...`;
+                        isMyTurn = (newData.currentTurn === (isBlack ? 'black' : 'white'));
+                        gameStatus.textContent = isMyTurn 
+                            ? `轮到你落子（${isBlack ? '黑方' : '白方'}）` 
+                            : '等待对手落子...';
                     }
                 })
                 .subscribe();
+        }
+
+        // 辅助函数：清除预览
+        function clearPreview() {
+            if (previewPosition) {
+                const { i, j } = previewPosition;
+                const cell = document.querySelector(`.intersection[data-i="${i}"][data-j="${j}"]`);
+                if (cell) cell.classList.remove('preview', 'black', 'white');
+                previewPosition = null;
+            }
         }
 
         // 渲染棋盘
@@ -751,32 +726,33 @@
             }
         }
 
-        // 胜负判断（经典五子棋规则，无bug）
+        // 胜负判断
         function checkWin(x, y) {
             const color = board[x][y];
             const directions = [[[-1,0],[1,0]],[[0,-1],[0,1]],[[-1,-1],[1,1]],[[-1,1],[1,-1]]];
+            
             for (const [dir1, dir2] of directions) {
                 let count = 1;
                 // 第一个方向
                 for (let i = 1; i < 5; i++) {
                     const nx = x + dir1[0] * i;
                     const ny = y + dir1[1] * i;
-                    if (nx >= 0 && nx < 15 && ny >= 0 && ny < 15 && board[nx][ny] === color) count++;
+                    if (nx >=0 && nx <15 && ny >=0 && ny <15 && board[nx][ny] === color) count++;
                     else break;
                 }
                 // 第二个方向
                 for (let i = 1; i < 5; i++) {
                     const nx = x + dir2[0] * i;
                     const ny = y + dir2[1] * i;
-                    if (nx >= 0 && nx < 15 && ny >= 0 && ny < 15 && board[nx][ny] === color) count++;
+                    if (nx >=0 && nx <15 && ny >=0 && ny <15 && board[nx][ny] === color) count++;
                     else break;
                 }
-                if (count >= 5) return color === "black" ? "黑方" : "白方";
+                if (count >=5) return color === 'black' ? '黑方' : '白方';
             }
             return null;
         }
 
-        // 平局判断（无bug）
+        // 平局判断
         function checkDraw() {
             for (let i = 0; i < 15; i++) {
                 for (let j = 0; j < 15; j++) {
@@ -786,72 +762,125 @@
             return true;
         }
 
-        // 重置房间数据
+        // 重置房间
         async function resetRoom() {
             const newBoard = Array(15).fill().map(() => Array(15).fill(null));
-            await supabase.from('rooms').upsert({ 
+            await supabase.from('rooms').upsert({
                 id: roomId,
                 blackPlayer: true,
-                whitePlayer: false, // 初始白方未加入
-                currentTurn: "black",
+                whitePlayer: false,
+                currentTurn: 'black',
                 board: newBoard,
                 gameOver: false,
                 winner: null
             });
             board = newBoard;
-            gameOver = false;
-            isOpponentJoined = false;
-            renderBoard();
-            playAgainBtn.style.display = "none";
         }
 
         // 再来一局
         async function playAgain() {
             if (isBlack) {
                 await resetRoom();
-                statusEl.textContent = `新游戏开始，等待白方加入...`;
+                gameOver = false;
+                isOpponentJoined = false;
                 isMyTurn = false;
+                renderBoard();
+                gameStatus.textContent = "等待白方加入...";
+                playAgainBtn.style.display = 'none';
                 showToast("新游戏开始，等待对手");
             } else {
-                statusEl.textContent = `等待房主开始新游戏...`;
+                gameStatus.textContent = "等待房主开始新游戏...";
                 showToast("等待房主操作");
             }
-            playAgainBtn.style.display = "none";
         }
 
-        // 调试弹窗：显示房间状态
-        function showDebugModal(roomData, error) {
-            const debugResult = document.getElementById('debug-result');
-            const debugRoomId = document.getElementById('debug-roomId');
-            const debugBlackPlayer = document.getElementById('debug-blackPlayer');
-            const debugWhitePlayer = document.getElementById('debug-whitePlayer');
-            const debugCurrentTurn = document.getElementById('debug-currentTurn');
-            const debugGameOver = document.getElementById('debug-gameOver');
-            const debugWinner = document.getElementById('debug-winner');
+        // 清理重复房间
+        async function cleanDuplicateRooms() {
+            if (!supabase) {
+                showToast("请先等待连接成功");
+                return;
+            }
 
-            // 重置值
-            debugRoomId.textContent = "-";
-            debugBlackPlayer.textContent = "-";
-            debugWhitePlayer.textContent = "-";
-            debugCurrentTurn.textContent = "-";
-            debugGameOver.textContent = "-";
-            debugWinner.textContent = "-";
+            try {
+                showToast("开始清理数据...");
+                // 备用清理方案
+                const { data: allRooms } = await supabase.from('rooms').select('id, created_at');
+                if (allRooms && allRooms.length > 0) {
+                    const roomMap = new Map();
+                    allRooms.forEach(room => {
+                        if (!roomMap.has(room.id) || new Date(room.created_at) > new Date(roomMap.get(room.id).created_at)) {
+                            roomMap.set(room.id, room);
+                        }
+                    });
+                    const keepIds = Array.from(roomMap.values()).map(r => r.id);
+                    await supabase.from('rooms').delete().not('id', 'in', keepIds);
+                }
+
+                // 添加唯一约束
+                try {
+                    await supabase.from('rooms').alterTable().addConstraint('rooms_id_unique', 'unique(id)');
+                } catch (e) {
+                    if (!e.message.includes('already exists')) throw e;
+                }
+
+                createStatus.textContent = "✅ 重复房间数据清理完成";
+                showToast("清理完成！");
+            } catch (err) {
+                createStatus.textContent = `清理失败：${err.message.slice(0, 20)}`;
+                showToast("清理失败，请手动操作");
+                console.error('清理数据失败：', err);
+            }
+        }
+
+        // 提示弹窗
+        function showToast(text) {
+            toast.textContent = text;
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 2000);
+        }
+
+        // 调试弹窗
+        function showDebugModal(roomData, error) {
+            debugRoomId.textContent = '-';
+            debugBlack.textContent = '-';
+            debugWhite.textContent = '-';
+            debugTurn.textContent = '-';
 
             if (error) {
-                debugResult.textContent = `❌ 失败: ${error.message.slice(0, 30)}...`;
+                debugResult.textContent = `❌ 失败: ${error.message.slice(0, 30)}`;
                 debugResult.className = 'error';
             } else if (roomData) {
                 debugResult.textContent = "✅ 成功";
                 debugResult.className = 'success';
-                debugRoomId.textContent = roomData.id || "-";
-                debugBlackPlayer.textContent = roomData.blackPlayer ? "是" : "否";
-                debugWhitePlayer.textContent = roomData.whitePlayer ? "是" : "否";
-                debugCurrentTurn.textContent = roomData.currentTurn === 'black' ? "黑方" : "白方";
-                debugGameOver.textContent = roomData.gameOver ? "是" : "否";
-                debugWinner.textContent = roomData.winner || "无";
+                debugRoomId.textContent = roomData.id || '-';
+                debugBlack.textContent = roomData.blackPlayer ? '是' : '否';
+                debugWhite.textContent = roomData.whitePlayer ? '是' : '否';
+                debugTurn.textContent = roomData.currentTurn === 'black' ? '黑方' : '白方';
             } else {
                 debugResult.textContent = "⚠️ 无房间数据";
-                debugResult.className = 'value';
             }
 
-            debugModal.cla
+            debugModal.classList.add('active');
+        }
+
+        function closeDebugModal() {
+            debugModal.classList.remove('active');
+        }
+
+        // 绑定事件
+        createRoomBtn.addEventListener('click', createRoom);
+        joinRoomBtn.addEventListener('click', joinRoom);
+        cleanDataBtn.addEventListener('click', cleanDuplicateRooms);
+        playAgainBtn.addEventListener('click', playAgain);
+
+        // 页面加载初始化
+        window.onload = () => {
+            initSupabase();
+            // 阻止微信下拉刷新
+            document.addEventListener('touchmove', (e) => {
+                if (e.target === chessBoard) e.preventDefault();
+            }, { passive: false });
+        };
+    </script>
+</body>
+</html>
