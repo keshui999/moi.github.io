@@ -150,7 +150,7 @@
             line-height: 20px;
         }
 
-        /* 修复棋盘线条问题：重新调整背景图样式 */
+        /* 棋盘样式：使用CSS Grid作为主要方案 */
         .chess-board {
             position: relative;
             background-color: #e9d8a6;
@@ -160,50 +160,58 @@
             margin-bottom: 15px;
             aspect-ratio: 1/1;
             width: 100%;
-            /* 修复横竖线显示：调整background-size和background-position */
+            /* 关键修改：使用CSS Grid创建15x15的网格 */
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            grid-template-rows: repeat(15, 1fr);
+        }
+
+        /* 为Grid的每个单元格添加边框，形成棋盘线 */
+        .chess-board::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background-image: 
                 linear-gradient(to right, #5c4033 1px, transparent 1px),
                 linear-gradient(to bottom, #5c4033 1px, transparent 1px);
-            background-size: calc(100% / 14), calc(100% / 14);
-            background-position: 0 0;
-            background-repeat: repeat;
+            /* 背景大小与Grid单元格大小匹配 */
+            background-size: calc(100% / 15), calc(100% / 15);
+            /* 确保线条在所有内容之下 */
+            z-index: 1;
+            /* 修复线条被边框裁剪的问题 */
+            margin: 1px;
         }
 
         /* 天元和星位 */
-        .chess-board::before, .chess-board::after,
-        .chess-board .star-1, .chess-board .star-2, .chess-board .star-3 {
-            content: '';
+        .star {
             position: absolute;
             width: 6px;
             height: 6px;
             background-color: #5c4033;
             border-radius: 50%;
-            z-index: 5;
+            z-index: 5; /* 确保星位在线条之上 */
         }
 
-        .chess-board::before {
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
+        .star.center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .star.tl { top: calc(100% * 4 / 14); left: calc(100% * 4 / 14); }
+        .star.tr { top: calc(100% * 4 / 14); left: calc(100% * 10 / 14); }
+        .star.bl { top: calc(100% * 10 / 14); left: calc(100% * 4 / 14); }
+        .star.br { top: calc(100% * 10 / 14); left: calc(100% * 10 / 14); }
 
-        .chess-board::after {
-            top: calc(100% * 4 / 14);
-            left: calc(100% * 4 / 14);
-        }
-
-        .chess-board .star-1 { top: calc(100% * 4 / 14); left: calc(100% * 10 / 14); }
-        .chess-board .star-2 { top: calc(100% * 10 / 14); left: calc(100% * 4 / 14); }
-        .chess-board .star-3 { top: calc(100% * 10 / 14); left: calc(100% * 10 / 14); }
-
-        /* 交叉点 */
+        /* 交叉点：利用Grid自动定位 */
         .intersection {
-            position: absolute;
+            /* Grid会自动将这个元素放置在对应的行列中 */
+            /* 我们只需要设置它的大小和样式 */
             width: 22px;
             height: 22px;
             border-radius: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
+            /* 居中 */
+            justify-self: center;
+            align-self: center;
+            z-index: 10; /* 确保交叉点在星位之上 */
             cursor: pointer;
         }
 
@@ -353,9 +361,7 @@
             <div class="game-status" id="gameStatus">等待对手加入...</div>
         </div>
         <div class="chess-board" id="chessBoard">
-            <div class="star-1"></div>
-            <div class="star-2"></div>
-            <div class="star-3"></div>
+            <!-- 星位将通过JS动态添加 -->
         </div>
         <button class="btn play-again-btn" id="playAgainBtn">再来一局</button>
     </div>
@@ -379,7 +385,7 @@
     <!-- 引入Supabase SDK（指定版本，避免加载问题） -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4/dist/umd/supabase.min.js"></script>
     <script>
-        // Supabase配置
+        // Supabase配置（使用你提供的最新anonKey）
         const supabaseConfig = {
             url: "https://ftcxvlihfzwxkwzewqph.supabase.co",
             anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y3h2bGloZnp3eGt3emV3cXBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2MzYyNzgsImV4cCI6MjA4MTIxMjI3OH0.FZyhUAijmPtx7hF7lCopZCx95XYK3qfSWSmKUEgX_7k"
@@ -416,18 +422,20 @@
         const debugWhite = document.getElementById('debugWhite');
         const debugTurn = document.getElementById('debugTurn');
 
-        // 初始化Supabase（增加超时处理，解决连接卡顿）
+        // 初始化Supabase（跳过Auth检测，直接检测数据库连接）
         async function initSupabase() {
             try {
-                // 设置超时
+                // 设置5秒超时
                 const timeoutPromise = new Promise((_, reject) => {
                     setTimeout(() => reject(new Error('连接超时')), 5000);
                 });
 
-                // 初始化并检测连接
+                // 初始化Supabase客户端
                 supabase = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
-                const connectPromise = supabase.auth.getUser();
-                const { error } = await Promise.race([connectPromise, timeoutPromise]);
+                
+                // 直接检测数据库连接（替代Auth检测）
+                const dbPromise = supabase.from('rooms').select('*', { count: 'exact' }).limit(1);
+                const { error } = await Promise.race([dbPromise, timeoutPromise]);
 
                 if (error) throw error;
                 createStatus.textContent = "✅ 连接成功，可创建/加入房间";
@@ -447,7 +455,7 @@
                 return;
             }
 
-            // 生成房间号
+            // 生成/验证房间号
             roomId = roomIdInput.value.trim() || Math.floor(1000 + Math.random() * 9000).toString();
             if (roomId.length !== 4 || isNaN(roomId)) {
                 showToast("房间号必须是4位数字");
@@ -503,7 +511,7 @@
                 showDebugModal(roomData, error);
 
                 if (error) {
-                    showToast(`查询失败：${err.message.slice(0, 20)}`);
+                    showToast(`查询失败：${error.message.slice(0, 20)}`);
                     return;
                 }
 
@@ -569,33 +577,26 @@
 
         // 初始化棋盘
         function initBoard() {
-            // 清空原有交叉点
-            const oldIntersections = chessBoard.querySelector('.intersections-container');
-            if (oldIntersections) oldIntersections.remove();
+            // 清空原有内容
+            chessBoard.innerHTML = '';
 
-            // 创建交叉点容器
-            const container = document.createElement('div');
-            container.className = 'intersections-container';
-            container.style.position = 'absolute';
-            container.style.width = '100%';
-            container.style.height = '100%';
-            chessBoard.appendChild(container);
+            // 添加星位
+            const starClasses = ['center', 'tl', 'tr', 'bl', 'br'];
+            starClasses.forEach(className => {
+                const star = document.createElement('div');
+                star.className = `star ${className}`;
+                chessBoard.appendChild(star);
+            });
 
-            // 计算间隔
-            const gridSize = 14;
-            const cellPercent = 100 / gridSize;
-
-            // 创建交叉点
+            // 创建交叉点（利用Grid自动布局）
             for (let i = 0; i < 15; i++) {
                 for (let j = 0; j < 15; j++) {
                     const intersection = document.createElement('div');
                     intersection.className = 'intersection';
                     intersection.dataset.i = i;
                     intersection.dataset.j = j;
-                    intersection.style.left = `${i * cellPercent}%`;
-                    intersection.style.top = `${j * cellPercent}%`;
-                    intersection.addEventListener('click', handleCellClick);
-                    container.appendChild(intersection);
+                    // Grid会自动根据子元素的顺序填充网格
+                    chessBoard.appendChild(intersection);
                 }
             }
         }
@@ -784,7 +785,7 @@
                 gameOver = false;
                 isOpponentJoined = false;
                 isMyTurn = false;
-                renderBoard();
+                initBoard(); // 重新初始化棋盘
                 gameStatus.textContent = "等待白方加入...";
                 playAgainBtn.style.display = 'none';
                 showToast("新游戏开始，等待对手");
