@@ -3,192 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>五子棋联机对战</title>
+    <title>五子棋跨设备联机</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: sans-serif;
-        }
-        body {
-            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-            min-height: 100vh;
-            padding: 15px;
-        }
-        .page {
-            display: none;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        .page.active {
-            display: block;
-        }
-        .start-page {
-            text-align: center;
-            background: #fff;
-            border-radius: 20px;
-            padding: 30px 25px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        }
-        .start-page h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            color: #2d3748;
-        }
-        .start-page input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            color: #fff;
-            margin-bottom: 10px;
-        }
-        .host-btn {
-            background-color: #4299e1;
-        }
-        .guest-btn {
-            background-color: #48bb78;
-        }
-        .board-page {
-            text-align: center;
-        }
-        .board-header {
-            background: #fff;
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        }
-        .game-status {
-            font-size: 15px;
-            color: #4a5568;
-        }
-        .chess-board {
-            position: relative;
-            background-color: #e9d8a6;
-            border: 3px solid #b98f5e;
-            border-radius: 8px;
-            aspect-ratio: 1/1;
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(15, 1fr);
-            grid-template-rows: repeat(15, 1fr);
-            margin-bottom: 15px;
-        }
-        .chess-board::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                linear-gradient(to right, #5c4033 1px, transparent 1px),
-                linear-gradient(to bottom, #5c4033 1px, transparent 1px);
-            background-size: calc(100% / 15);
-            z-index: 1;
-            margin: 1px;
-        }
-        .star {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background-color: #5c4033;
-            border-radius: 50%;
-            z-index: 5;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        body { background: linear-gradient(135deg, #f5f7fa, #c3cfe2); min-height: 100vh; padding: 15px; }
+        .page { display: none; max-width: 400px; margin: 0 auto; }
+        .page.active { display: block; }
+        .start-page { text-align: center; background: #fff; border-radius: 20px; padding: 30px 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        .start-page h1 { font-size: 28px; margin-bottom: 20px; color: #2d3748; }
+        .start-page input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; margin-bottom: 15px; text-align: center; }
+        .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 500; cursor: pointer; color: #fff; margin-bottom: 10px; }
+        .host-btn { background-color: #4299e1; }
+        .guest-btn { background-color: #48bb78; }
+        .board-page { text-align: center; }
+        .board-header { background: #fff; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .game-status { font-size: 15px; color: #4a5568; }
+        .chess-board { position: relative; background-color: #e9d8a6; border: 3px solid #b98f5e; border-radius: 8px; aspect-ratio: 1/1; width: 100%; display: grid; grid-template-columns: repeat(15, 1fr); grid-template-rows: repeat(15, 1fr); margin-bottom: 15px; }
+        .chess-board::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(to right, #5c4033 1px, transparent 1px), linear-gradient(to bottom, #5c4033 1px, transparent 1px); background-size: calc(100% / 15); z-index: 1; margin: 1px; }
+        .star { position: absolute; width: 6px; height: 6px; background-color: #5c4033; border-radius: 50%; z-index: 5; }
         .star.center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .star.tl { top: calc(100% * 4 / 14); left: calc(100% * 4 / 14); }
         .star.tr { top: calc(100% * 4 / 14); left: calc(100% * 10 / 14); }
         .star.bl { top: calc(100% * 10 / 14); left: calc(100% * 4 / 14); }
         .star.br { top: calc(100% * 10 / 14); left: calc(100% * 10 / 14); }
-        .intersection {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            justify-self: center;
-            align-self: center;
-            z-index: 10;
-            cursor: pointer;
-        }
-        .intersection:hover:not(.black):not(.white) {
-            background-color: rgba(92, 64, 51, 0.15);
-        }
-        .intersection.black, .intersection.white {
-            position: relative;
-        }
-        .intersection.black::after, .intersection.white::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            height: 80%;
-            border-radius: 50%;
-            animation: placeStone 0.2s ease-out;
-        }
-        .intersection.black::after {
-            background: radial-gradient(circle at 35% 35%, #555, #000);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        .intersection.white::after {
-            background: radial-gradient(circle at 35% 35%, #fff, #d0d0d0);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        @keyframes placeStone {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-            80% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
-        .play-again-btn {
-            background-color: #4299e1;
-            display: none;
-            margin: 0 auto;
-            width: 80%;
-        }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.7);
-            color: #fff;
-            padding: 8px 15px;
-            border-radius: 6px;
-            font-size: 14px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-            z-index: 1001;
-        }
+        .intersection { width: 22px; height: 22px; border-radius: 50%; justify-self: center; align-self: center; z-index: 10; cursor: pointer; }
+        .intersection:hover:not(.black):not(.white) { background-color: rgba(92, 64, 51, 0.15); }
+        .intersection.black, .intersection.white { position: relative; }
+        .intersection.black::after, .intersection.white::after { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 80%; border-radius: 50%; animation: placeStone 0.2s ease-out; }
+        .intersection.black::after { background: radial-gradient(circle at 35% 35%, #555, #000); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .intersection.white::after { background: radial-gradient(circle at 35% 35%, #fff, #d0d0d0); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        @keyframes placeStone { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 80% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+        .play-again-btn { background-color: #4299e1; display: none; margin: 0 auto; width: 80%; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 8px 15px; border-radius: 6px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 1001; }
         .toast.active { opacity: 1; pointer-events: all; }
     </style>
 </head>
 <body>
-    <!-- 开始页面 -->
     <div class="page start-page active" id="startPage">
-        <h1>五子棋联机对战</h1>
-        <input type="text" id="roomIdInput" placeholder="输入4位房间号" maxlength="4">
-        <button class="btn host-btn" id="hostBtn">创建房间（黑方）</button>
-        <button class="btn guest-btn" id="guestBtn">加入房间（白方）</button>
+        <h1>五子棋跨设备联机</h1>
+        <input type="text" id="roomIdInput" placeholder="输入任意房间号（如123）" maxlength="6">
+        <button class="btn host-btn" id="joinBtn">加入房间</button>
     </div>
 
-    <!-- 棋盘页面 -->
     <div class="page board-page" id="boardPage">
         <div class="board-header">
             <div class="game-status" id="gameStatus">等待对手加入...</div>
@@ -205,261 +61,161 @@
 
     <div class="toast" id="toast">提示</div>
 
-    <!-- 引入Supabase SDK -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script>
-        // 已填入你的Supabase配置
-        const SUPABASE_URL = "https://ftcxvlihfzwxkwzewqph.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y3h2bGloZnp3eGt3emV3cXBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2MzYyNzgsImV4cCI6MjA4MTIxMjI3OH0.FZyhUAijmPtx7hF7lCopZCx95XYK3qfSWSmKUEgX_7k";
-
-        // 全局变量
-        let supabase = null;
-        let roomSubscription = null;
-        let currentRoomId = "";
-        let isHost = false;
+        // 免费公共WebSocket中继服务（无需搭建服务器）
+        const WS_URL = 'wss://echo.websocket.events/';
+        let ws;
+        let roomId = '';
+        let myColor = ''; // black/white
         let isMyTurn = false;
         let gameOver = false;
         let board = Array(15).fill().map(() => Array(15).fill(null));
+        let players = new Set(); // 房间内玩家ID
 
         // DOM元素
-        const startPage = document.getElementById("startPage");
-        const boardPage = document.getElementById("boardPage");
-        const roomIdInput = document.getElementById("roomIdInput");
-        const hostBtn = document.getElementById("hostBtn");
-        const guestBtn = document.getElementById("guestBtn");
-        const gameStatus = document.getElementById("gameStatus");
-        const chessBoard = document.getElementById("chessBoard");
-        const playAgainBtn = document.getElementById("playAgainBtn");
-        const toast = document.getElementById("toast");
+        const startPage = document.getElementById('startPage');
+        const boardPage = document.getElementById('boardPage');
+        const roomIdInput = document.getElementById('roomIdInput');
+        const joinBtn = document.getElementById('joinBtn');
+        const gameStatus = document.getElementById('gameStatus');
+        const chessBoard = document.getElementById('chessBoard');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const toast = document.getElementById('toast');
 
-        // 初始化Supabase
-        function initSupabase() {
-            try {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                showToast("Supabase初始化成功");
-            } catch (err) {
-                console.error("Supabase初始化失败：", err);
-                showToast("Supabase初始化失败，请检查配置");
+        // 初始化WebSocket
+        function initWS() {
+            ws = new WebSocket(WS_URL);
+            ws.onopen = () => {
+                showToast('联机通道已连接');
+                sendMsg({ type: 'join', roomId });
+            };
+            ws.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    handleWSMessage(data);
+                } catch (err) {}
+            };
+            ws.onclose = () => {
+                showToast('联机通道已断开，正在重连...');
+                setTimeout(initWS, 3000);
+            };
+            ws.onerror = (err) => {
+                showToast('联机出错：' + err.message);
+            };
+        }
+
+        // 处理WebSocket消息
+        function handleWSMessage(data) {
+            if (data.roomId !== roomId) return; // 只处理当前房间消息
+
+            switch (data.type) {
+                case 'join':
+                    players.add(data.playerId);
+                    if (players.size === 1) {
+                        myColor = 'black';
+                        isMyTurn = true;
+                        updateGameStatus('你是黑方，等待对手加入');
+                    } else if (players.size === 2) {
+                        myColor = 'white';
+                        isMyTurn = false;
+                        updateGameStatus('你是白方，等待黑方落子');
+                        sendMsg({ type: 'start' });
+                    }
+                    break;
+                case 'start':
+                    if (myColor === 'black') updateGameStatus('你是黑方，该你落子');
+                    break;
+                case 'move':
+                    board[data.i][data.j] = data.color;
+                    renderBoard();
+                    const winner = checkWin(data.i, data.j);
+                    if (winner) {
+                        gameOver = true;
+                        updateGameStatus(`🎉 ${winner === 'black' ? '黑方' : '白方'}获胜！`);
+                        playAgainBtn.style.display = 'block';
+                        showToast(`${winner === 'black' ? '黑方' : '白方'}获胜！`);
+                    } else if (checkDraw()) {
+                        gameOver = true;
+                        updateGameStatus('🤝 游戏平局！');
+                        playAgainBtn.style.display = 'block';
+                        showToast('游戏平局');
+                    } else {
+                        isMyTurn = data.color !== myColor;
+                        updateGameStatus(isMyTurn ? `该你落子（${myColor === 'black' ? '黑方' : '白方'}）` : '等待对手落子...');
+                    }
+                    break;
+                case 'restart':
+                    board = Array(15).fill().map(() => Array(15).fill(null));
+                    gameOver = false;
+                    playAgainBtn.style.display = 'none';
+                    isMyTurn = myColor === 'black';
+                    updateGameStatus(isMyTurn ? `该你落子（${myColor === 'black' ? '黑方' : '白方'}）` : '等待对手落子...');
+                    renderBoard();
+                    break;
             }
+        }
+
+        // 发送消息
+        function sendMsg(data) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+            const msg = {
+                ...data,
+                roomId,
+                playerId: Math.random().toString(36).substr(2, 9) // 随机玩家ID
+            };
+            ws.send(JSON.stringify(msg));
+        }
+
+        // 加入房间
+        function joinRoom() {
+            roomId = roomIdInput.value.trim();
+            if (!roomId) {
+                showToast('请输入房间号');
+                return;
+            }
+            startPage.classList.remove('active');
+            boardPage.classList.add('active');
+            initBoard();
+            initWS();
+        }
+
+        // 处理落子
+        function handleCellClick(e) {
+            if (!isMyTurn || gameOver || !ws) return;
+            const i = parseInt(e.target.dataset.i);
+            const j = parseInt(e.target.dataset.j);
+            if (board[i][j] !== null) return;
+
+            const color = myColor;
+            sendMsg({ type: 'move', i, j, color });
         }
 
         // 初始化棋盘
         function initBoard() {
-            chessBoard.innerHTML = "";
-            ["center", "tl", "tr", "bl", "br"].forEach(cls => {
-                const star = document.createElement("div");
+            chessBoard.innerHTML = '';
+            ['center', 'tl', 'tr', 'bl', 'br'].forEach(cls => {
+                const star = document.createElement('div');
                 star.className = `star ${cls}`;
                 chessBoard.appendChild(star);
             });
             for (let i = 0; i < 15; i++) {
                 for (let j = 0; j < 15; j++) {
-                    const intersection = document.createElement("div");
-                    intersection.className = "intersection";
+                    const intersection = document.createElement('div');
+                    intersection.className = 'intersection';
                     intersection.dataset.i = i;
                     intersection.dataset.j = j;
-                    intersection.addEventListener("click", handleCellClick);
+                    intersection.addEventListener('click', handleCellClick);
                     chessBoard.appendChild(intersection);
                 }
             }
             renderBoard();
         }
 
-        // 处理落子
-        async function handleCellClick(e) {
-            if (!isMyTurn || gameOver || !supabase) return;
-            const i = parseInt(e.target.dataset.i);
-            const j = parseInt(e.target.dataset.j);
-            if (board[i][j] !== null) return;
-
-            const color = isHost ? "black" : "white";
-            board[i][j] = color;
-            renderBoard();
-
-            const winner = checkWin(i, j);
-            if (winner) {
-                gameOver = true;
-                updateGameStatus(`🎉 ${winner}获胜！`);
-                playAgainBtn.style.display = "block";
-                showToast(`${winner}获胜！`);
-                await updateRoomData({ gameOver: true, winner: winner === "黑方" ? "black" : "white" });
-                return;
-            }
-
-            if (checkDraw()) {
-                gameOver = true;
-                updateGameStatus(`🤝 游戏平局！`);
-                playAgainBtn.style.display = "block";
-                showToast("游戏平局");
-                await updateRoomData({ gameOver: true, winner: "draw" });
-                return;
-            }
-
-            isMyTurn = false;
-            updateGameStatus("等待对手落子...");
-            await updateRoomData({ board, currentTurn: color === "black" ? "white" : "black" });
-        }
-
-        // 更新房间数据
-        async function updateRoomData(data) {
-            if (!supabase) return;
-            try {
-                const { error } = await supabase
-                    .from("rooms")
-                    .update(data)
-                    .eq("id", currentRoomId);
-                if (error) throw error;
-            } catch (err) {
-                console.error("更新房间失败：", err);
-                showToast("更新失败：" + err.message);
-            }
-        }
-
-        // 处理房间更新
-        function handleRoomUpdate(payload) {
-            const newData = payload.new;
-            board = newData.board;
-            renderBoard();
-
-            if (newData.gameOver) {
-                gameOver = true;
-                playAgainBtn.style.display = "block";
-                if (newData.winner === "draw") {
-                    updateGameStatus("🤝 游戏平局！");
-                    showToast("游戏平局");
-                } else {
-                    const winnerText = newData.winner === "black" ? "黑方" : "白方";
-                    updateGameStatus(`🎉 ${winnerText}获胜！`);
-                    showToast(`${winnerText}获胜！`);
-                }
-                return;
-            }
-
-            const myColor = isHost ? "black" : "white";
-            isMyTurn = newData.currentTurn === myColor;
-            updateGameStatus(isMyTurn ? `轮到你落子（${myColor === "black" ? "黑方" : "白方"}）` : "等待对手落子...");
-        }
-
-        // 创建房间
-        async function createRoom() {
-            if (!supabase) {
-                showToast("Supabase未初始化，请检查配置");
-                return;
-            }
-            const inputId = roomIdInput.value.trim();
-            currentRoomId = String(inputId);
-            if (!/^\d{4}$/.test(currentRoomId)) {
-                showToast("请输入4位数字房间号！");
-                return;
-            }
-
-            try {
-                const { error } = await supabase
-                    .from("rooms")
-                    .upsert({
-                        id: currentRoomId,
-                        blackPlayer: true,
-                        whitePlayer: false,
-                        currentTurn: "black",
-                        board,
-                        gameOver: false,
-                        winner: null
-                    });
-                if (error) throw error;
-
-                showToast("房间创建成功！等待白方加入");
-                switchToBoardPage();
-                initRoomSubscription();
-                isHost = true;
-                isMyTurn = true;
-                updateGameStatus("等待白方加入，你先落子（黑方）");
-            } catch (err) {
-                console.error("创建房间失败：", err);
-                showToast("创建失败：" + err.message);
-            }
-        }
-
-        // 加入房间
-        async function joinRoom() {
-            if (!supabase) {
-                showToast("Supabase未初始化，请检查配置");
-                return;
-            }
-            const inputId = roomIdInput.value.trim();
-            currentRoomId = String(inputId);
-            if (!/^\d{4}$/.test(currentRoomId)) {
-                showToast("请输入4位数字房间号！");
-                return;
-            }
-
-            try {
-                const { data, error } = await supabase
-                    .from("rooms")
-                    .select("*")
-                    .eq("id", currentRoomId)
-                    .single();
-                if (error) throw error;
-                if (!data) {
-                    showToast("房间不存在！");
-                    return;
-                }
-                if (data.whitePlayer) {
-                    showToast("房间已满！");
-                    return;
-                }
-
-                await supabase
-                    .from("rooms")
-                    .update({ whitePlayer: true })
-                    .eq("id", currentRoomId);
-
-                board = data.board;
-                showToast("成功加入房间！等待黑方落子");
-                switchToBoardPage();
-                initRoomSubscription();
-                isHost = false;
-                isMyTurn = data.currentTurn === "white";
-                updateGameStatus(isMyTurn ? "轮到你落子（白方）" : "等待黑方落子（你是白方）");
-            } catch (err) {
-                console.error("加入房间失败：", err);
-                showToast("加入失败：" + err.message);
-            }
-        }
-
-        // 初始化实时订阅
-        function initRoomSubscription() {
-            if (!supabase) return;
-            if (roomSubscription) {
-                supabase.removeChannel(roomSubscription);
-            }
-
-            roomSubscription = supabase
-                .channel(`room_${currentRoomId}`)
-                .on("postgres_changes", {
-                    event: "UPDATE",
-                    schema: "public",
-                    table: "rooms",
-                    filter: `id=eq.${String(currentRoomId)}`
-                }, handleRoomUpdate)
-                .subscribe((status) => {
-                    console.log("订阅状态：", status);
-                    if (status === "SUBSCRIBED") showToast("实时连接成功");
-                    if (status === "CHANNEL_ERROR") showToast("实时连接失败");
-                });
-        }
-
-        // 切换到棋盘页面
-        function switchToBoardPage() {
-            startPage.classList.remove("active");
-            boardPage.classList.add("active");
-            initBoard();
-        }
-
         // 渲染棋盘
         function renderBoard() {
-            document.querySelectorAll(".intersection").forEach(cell => {
-                cell.classList.remove("black", "white");
+            document.querySelectorAll('.intersection').forEach(cell => {
+                cell.classList.remove('black', 'white');
             });
-
             for (let i = 0; i < 15; i++) {
                 for (let j = 0; j < 15; j++) {
                     const color = board[i][j];
@@ -477,36 +233,21 @@
             const dirs = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1],[-1,1],[1,-1]];
             const checkDir = (dx, dy) => {
                 let count = 1;
-                for (let i = 1; i < 5; i++) {
-                    const nx = x + dx * i;
-                    const ny = y + dy * i;
-                    if (nx >=0 && nx <15 && ny >=0 && ny <15 && board[nx][ny] === color) count++;
-                    else break;
-                }
-                for (let i = 1; i < 5; i++) {
-                    const nx = x - dx * i;
-                    const ny = y - dy * i;
-                    if (nx >=0 && nx <15 && ny >=0 && ny <15 && board[nx][ny] === color) count++;
-                    else break;
-                }
+                let nx = x + dx, ny = y + dy;
+                while (nx >=0 && nx <15 && ny >=0 && ny <15 && board[nx][ny] === color) { count++; nx += dx; ny += dy; }
+                nx = x - dx, ny = y - dy;
+                while (nx >=0 && nx <15 && ny >=0 && ny <15 && board[nx][ny] === color) { count++; nx -= dx; ny -= dy; }
                 return count >= 5;
             };
-
-            for (let i = 0; i < dirs.length; i += 2) {
-                if (checkDir(dirs[i][0], dirs[i][1])) {
-                    return color === "black" ? "黑方" : "白方";
-                }
+            for (let d = 0; d < dirs.length; d += 2) {
+                if (checkDir(dirs[d][0], dirs[d][1])) return color;
             }
             return null;
         }
 
         // 平局判断
         function checkDraw() {
-            for (let i = 0; i < 15; i++) {
-                for (let j = 0; j < 15; j++) {
-                    if (board[i][j] === null) return false;
-                }
-            }
+            for (let i = 0; i < 15; i++) for (let j = 0; j < 15; j++) if (!board[i][j]) return false;
             return true;
         }
 
@@ -518,36 +259,20 @@
         // 提示弹窗
         function showToast(text) {
             toast.textContent = text;
-            toast.classList.add("active");
-            setTimeout(() => toast.classList.remove("active"), 2000);
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 2000);
         }
 
         // 再来一局
-        playAgainBtn.addEventListener("click", async () => {
-            if (!supabase) return;
-            board = Array(15).fill().map(() => Array(15).fill(null));
-            gameOver = false;
-            playAgainBtn.style.display = "none";
-            await updateRoomData({
-                board,
-                currentTurn: "black",
-                gameOver: false,
-                winner: null
-            });
-            isMyTurn = isHost;
-            updateGameStatus(isMyTurn ? "轮到你落子（黑方）" : "等待黑方落子（你是白方）");
-            renderBoard();
+        playAgainBtn.addEventListener('click', () => {
+            sendMsg({ type: 'restart' });
         });
 
         // 绑定事件
-        hostBtn.addEventListener("click", createRoom);
-        guestBtn.addEventListener("click", joinRoom);
-
-        // 页面加载后初始化
-        window.addEventListener("load", initSupabase);
+        joinBtn.addEventListener('click', joinRoom);
 
         // 阻止下拉刷新
-        document.addEventListener("touchmove", (e) => {
+        document.addEventListener('touchmove', (e) => {
             if (e.target === chessBoard) e.preventDefault();
         }, { passive: false });
     </script>
